@@ -1,0 +1,26 @@
+[
+	{
+		"NO": "3162",
+		"Name": "Lin Manuel",
+		"Course": "Theater",
+		"H-Index": "0",
+		"Grades": [19.0, 20.0, 13.0, 20.0, 18.5],
+		"ToI": "0"
+	},
+	{
+		"NO": "7777",
+		"Name": "Alan Turing",
+		"Course": "Mathematics",
+		"H-Index": "42",
+		"Grades": [19.0, 20.0, 14.0, 18.0, 17.5],
+		"ToI": "1"
+	},
+	{
+		"NO": "264",
+		"Name": "Michel Foucault",
+		"Course": "Philosophy",
+		"H-Index": "305",
+		"Grades": [20.0, 19.0, 13.0, 16.0, 18.0],
+		"ToI": "1"
+	}
+]
