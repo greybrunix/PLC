@@ -53,7 +53,7 @@ def main():
     # NOTE group one is the name and group 2 is N
     if tst:
         headers = re.subn(r'(?<=,)(?=,)|(?<=},)(?=,)|(?<=,,)(?=)',tst.group(1),headers,count=(int(tst.group(2))));
-        headers = re.split(r',', headers[0]);
+        headers = re.split(r',', headers[0]); #NOT3 vai star a mudar o tipo do h3ad3rs
         headers.remove(tst.group()); # NOTE removes the list creation from the headers
     else:
         headers = re.split(r',', headers);
@@ -83,3 +83,4 @@ if __name__ == '__main__':
 # TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
 # NOTE already accepting base case, one single list in any position
 # TODO multiple lists, lists with varying length and functions over lists
+# TODO MAYB3 subs
