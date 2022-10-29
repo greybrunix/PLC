@@ -18,10 +18,13 @@ def conv_csm_json(content, headers):
                 flag = 0
                 new.insert(i,tmp_array[test])
                 tmp_head.insert(i,test)
+                print(tmp_head)
+                print(new)
             if flag == 1:
                 tmp_head.pop(i);
+                print(tmp_head)
+                print(new[i])
                 try:
-                # Lists are only floats or strings
                     tmp_array[test].insert(i,float(new.pop(i)))
                 except ValueError:
                     tmp_array[test].insert(i,new.pop(i))
@@ -64,6 +67,7 @@ def main():
                           count=int(tst.group(2))
                           );
         headers = re.split(r',', headers[0]);
+        print('\n',tst.group(),'\n')
         headers.remove(tst.group());
     else:
         headers = re.split(r',', headers)
@@ -71,7 +75,7 @@ def main():
     # TODO maybe use findall to get all instances of list creations
     final = lines.pop(len(lines)-1)
 
-    with open(file_name+'.json', 'w') as f:
+    with open(file_name+'.json', 'w+') as f:
         f.write('[\n');
         for line in lines:
             js_object = "\t{\n\t"; js_object += conv_csm_json(line, headers)
