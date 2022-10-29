@@ -1,4 +1,5 @@
 import re
+import sys
 
 def conv_csm_json(content, headers):
     # SECTION 1 - Preamble
@@ -46,13 +47,14 @@ def conv_csm_json(content, headers):
 
 def main():
 
+    agrev_func = {'AVG', 'SUM', 'COUNT', 'MAX', 'MIN'}
 
     # SECTION 1 - Getting the csv file
     file = input("Insert name of file:\n>> ")
     file_test = re.search(r'([A-Za-z0-9\_\-]+)\.csv',file)
-    file_name = file_test.group(1)
     if not file_test:
-        print("File is not a CSV file"); exit(1)
+        sys.exit("File is not a CSV file")
+    file_name = file_test.group(1)
     del file_test
     # NOTE
     try:
@@ -65,7 +67,7 @@ def main():
     # SECTION 2 - parsing lists
     lines[0] = re.sub(r'([A-Za-z ]*)\n', r'\1', lines[0])
     headers = lines.pop(0)
-    tst = re.search(r'([A-Za-z]+){([0-9]+)}',headers) 
+    tst = re.search(r'([A-Za-z0-9 \_\-]+){([0-9]+)(,[0-9]+)?}(::[A-Z]+)?',headers) 
     if tst:
         headers = re.subn(r'(?<=,)(?=,)|(?<=},)(?=,)|(?<=,,)(?=)',
                           tst.group(1),
