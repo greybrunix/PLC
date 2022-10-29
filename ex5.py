@@ -18,12 +18,8 @@ def conv_csm_json(content, headers):
                 flag = 0
                 new.insert(i,tmp_array[test])
                 tmp_head.insert(i,test)
-                print(tmp_head)
-                print(new)
             if flag == 1:
-                tmp_head.pop(i);
-                print(tmp_head)
-                print(new[i])
+                tmp_head.pop(i)
                 try:
                     tmp_array[test].insert(i,float(new.pop(i)))
                 except ValueError:
@@ -49,7 +45,7 @@ def main():
     file_test = re.search(r'([A-Za-z0-9\_\-]+)\.csv',file)
     file_name = file_test.group(1)
     if not file_test:
-        print("File is not a CSV file"); exit(1);
+        exit(1)
     del file_test
     try:
         f = open(file, 'r')
@@ -65,10 +61,9 @@ def main():
                           tst.group(1),
                           headers,
                           count=int(tst.group(2))
-                          );
-        headers = re.split(r',', headers[0]);
-        print('\n',tst.group(),'\n')
-        headers.remove(tst.group());
+                          )
+        headers = re.split(r',', headers[0])
+        headers.remove(tst.group())
     else:
         headers = re.split(r',', headers)
     # NOTE considering only one list can be accepted
@@ -76,7 +71,7 @@ def main():
     final = lines.pop(len(lines)-1)
 
     with open(file_name+'.json', 'w+') as f:
-        f.write('[\n');
+        f.write('[\n')
         for line in lines:
             js_object = "\t{\n\t"; js_object += conv_csm_json(line, headers)
             js_object += "},\n"; f.write(js_object)
@@ -85,7 +80,7 @@ def main():
     return 0
 
 if __name__ == '__main__':
-    main();
+    main()
 
 # TODO Lists with variable length (from x to y in size)
 # TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
