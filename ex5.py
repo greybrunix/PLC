@@ -1,6 +1,7 @@
 import re
 import sys
 
+
 def SUM(li):
     res = 0
     for el in li:
@@ -34,6 +35,7 @@ def conv_csm_json(content, headers, flags):
     json_object = ""; tmp_array = {}
     tmp_head = headers.copy(); # NOTE safeguarding the headers list
     flag = 0; i = 0
+
     flagM = 0; flagAg = 0; flagErr = 0
     # NOTE flags meanings:
     # flag <- List has been found
@@ -107,10 +109,11 @@ def conv_csm_json(content, headers, flags):
                                         int(new.pop(i)))
                     except ValueError:
                         flagErr = 1
+
         i= i+1; # NOTE iterate the rest of the content
 
-    
     # SECTION 3 - Writing to buffer
+
     # TODO: replace this with regex
     if not flagErr:
         for i, v in zip(tmp_head[:-1], new[:-1]):
@@ -130,6 +133,7 @@ def conv_csm_json(content, headers, flags):
     return json_object
 
 def main():
+
 
     agrev_func = {'::AVG', '::SUM',
                   '::COUNT', '::MAX',
@@ -155,10 +159,12 @@ def main():
     headers = lines.pop(0)
     tst = re.findall(r'([A-Za-z0-9 \_\-]+){([0-9]+)'
                      '(,([0-9]+))?}(::[A-Z]+)?',headers) 
+
     matches_list = []
     flags = {}
     if tst:
         for x in tst:
+
             N = int(x[1])
             if (x[3]):
                 N = int(x[3])
@@ -171,6 +177,7 @@ def main():
             x = list(x)
             flags[x[0]] = []
             if x[2]:
+
                 flags[x[0]].append(int(x[1]))
             if x[3]:
                 flags[x[0]].append(int(x[3]))
@@ -194,6 +201,7 @@ def main():
     with open(file_name+'.json', 'w+') as f:
         f.write('[\n')
         for line in lines:
+
             js_object = "\t{\n\t"
             try:
                 js_object += conv_csm_json(line, headers, flags)
@@ -210,7 +218,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
+
 # TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
 # TODO lists with varying length
 # NOTE Let us consider lists are only of numeric values
