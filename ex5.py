@@ -50,21 +50,26 @@ def conv_csm_json(content, headers, flags):
             N = int(flags[test][0])
             if (flags[test][1]):
                 try:
+                    # Checks if the list is of N,M format
                     M = int(flags[test][1])
                     flagM = 1
                     try:
+                        # Checks if the list has an agreg function
                         if flags[test][2]:
                             agreg = re.sub(r'::([A-Z]+)',r'\1',
                                            flags[test][2])
                             flagAg = 1
                     except IndexError:
+                        # If there is no agreg function
                         agreg = ''
                         flagAg = 0
                 except ValueError:
+                    # There is an agreg function
                     M = N
                     agreg = re.sub(r'::([A-Z]+)',r'\1',
                                    flags[test][1])
-                    flagAg = 1
+
+                    flagM = 0; flagAg = 1
         while flag and not flagErr:
             if (test not in tmp_head): 
                 # NOTE that there must be spaces in varying size lists,
@@ -73,9 +78,11 @@ def conv_csm_json(content, headers, flags):
                 if flagAg:
                     tmp_array[test] = eval(agreg+'('+
                                            str(tmp_array[test])+')')
+                # Reset flags
                 flag = 0; flagM = 0; flagAg = 0;
                 new.insert(i,tmp_array[test])
                 tmp_head.insert(i,test)
+                # Reset Values
                 del N; del M; del agreg
             if flag:
                 tmp_head.pop(i)
@@ -88,7 +95,7 @@ def conv_csm_json(content, headers, flags):
                         if (new[i] == '' and flagM and
                          len(tmp_array[test]) >= N and
                          len(tmp_array[test]) <= M):
-                            i+1;i-1
+                            new.pop(i)
                         # TODO
                         # Check why it only allows N or M
                         else:
@@ -104,6 +111,7 @@ def conv_csm_json(content, headers, flags):
 
     
     # SECTION 3 - Writing to buffer
+    # TODO: replace this with regex
     if not flagErr:
         for i, v in zip(tmp_head[:-1], new[:-1]):
             if isinstance(v,list):
@@ -202,11 +210,9 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# TODO Lists with variable length (from x to y in size)
+    
 # TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
-# NOTE already accepting base case, one single list in any position
-# TODO lists with varying length and functions over lists
+# TODO lists with varying length
 # NOTE Let us consider lists are only of numeric values
 # TODO MAYBE subs
 
