@@ -2,6 +2,7 @@ import re
 import sys
 
 
+# SECTION FOR AGGREGATION FUNCTIONS
 def SUM(li):
     res = 0
     for el in li:
@@ -28,6 +29,7 @@ def MIN(li):
             res = el
     return res
 
+# FUNCTION THAT CREATES THE JSON FILE
 def conv_csm_json(content, headers, flags):
     # SECTION 1 - Preamble
     new = re.sub(r'([A-Za-z ]*)\n',r'\1',content)
@@ -35,7 +37,7 @@ def conv_csm_json(content, headers, flags):
     json_object = ""; tmp_array = {}
     tmp_head = headers.copy(); # NOTE safeguarding the headers list
     flag = 0; i = 0
-
+    curr_check = 0
     flagM = 0; flagAg = 0; flagErr = 0
     # NOTE flags meanings:
     # flag <- List has been found
@@ -50,28 +52,32 @@ def conv_csm_json(content, headers, flags):
         if tmp_head[i] == tmp_head[i+1]: # NOTE we found a list
             flag = 1; test = str(tmp_head[i]); tmp_array[test] = []
             N = int(flags[test][0])
-            if (flags[test][1]):
-                try:
-                    # Checks if the list is of N,M format
-                    M = int(flags[test][1])
-                    flagM = 1
+            try:
+                if (flags[test][1]):
                     try:
+                    # Checks if the list is of N,M format
+                        M = int(flags[test][1])
+                        flagM = 1
+                        try:
                         # Checks if the list has an agreg function
-                        if flags[test][2]:
-                            agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                           flags[test][2])
-                            flagAg = 1
-                    except IndexError:
+                            if flags[test][2]:
+                                agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                               flags[test][2])
+                                flagAg = 1
+                        except IndexError:
                         # If there is no agreg function
-                        agreg = ''
-                        flagAg = 0
-                except ValueError:
+                            agreg = ''
+                            flagAg = 0
+                    except ValueError:
                     # There is an agreg function
-                    M = N
-                    agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                   flags[test][1])
+                        M = N
+                        agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                       flags[test][1])
 
-                    flagM = 0; flagAg = 1
+                        flagM = 0; flagAg = 1
+            except IndexError:
+                flagM = 0; flagAg = 0;
+                M = N; agreg = ''
         while flag and not flagErr:
             if (test not in tmp_head): 
                 # NOTE that there must be spaces in varying size lists,
@@ -85,23 +91,27 @@ def conv_csm_json(content, headers, flags):
                 new.insert(i,tmp_array[test])
                 tmp_head.insert(i,test)
                 # Reset Values
-                del N; del M; del agreg
+                curr_check = 0
+                del N; del M; del agreg; del elem_test
             if flag:
                 tmp_head.pop(i)
                 # Regular Search
                 if tmp_array[test]:
-                    try:
-                        tmp_array[test].insert(i,
-                                        int(new.pop(i)))
-                    except ValueError:
-                        if (new[i] == '' and flagM and
-                         len(tmp_array[test]) >= N and
-                         len(tmp_array[test]) <= M):
-                            new.pop(i)
-                        # TODO
-                        # Check why it only allows N or M
-                        else:
-                            flagErr = 1
+                        try:
+                            elem_test = new.pop(i)
+                            tmp_array[test].insert(i,
+                                            int(elem_test))
+                        except ValueError:
+                            if (curr_check == 0):
+                                curr_check = len(tmp_array[test])
+                            if (flagM == 1 and elem_test == '' and
+                             curr_check >= N and 
+                             curr_check <= M):
+                                curr_check += 1
+                            else:
+                                flagErr = 1
+                # NOTE the try does remove the value from new
+                # Thus it is safer to remove to a safe variable
                 else:
                     # Initial Search
                     try:
@@ -132,6 +142,8 @@ def conv_csm_json(content, headers, flags):
         raise ValueError
     return json_object
 
+
+# MAIN FUNCTION
 def main():
 
 
@@ -164,7 +176,6 @@ def main():
     flags = {}
     if tst:
         for x in tst:
-
             N = int(x[1])
             if (x[3]):
                 N = int(x[3])
@@ -176,8 +187,7 @@ def main():
                             )
             x = list(x)
             flags[x[0]] = []
-            if x[2]:
-
+            if x[1]:
                 flags[x[0]].append(int(x[1]))
             if x[3]:
                 flags[x[0]].append(int(x[3]))
@@ -216,11 +226,9 @@ def main():
         js_object += "}\n]"; f.write(js_object); f.close()
     return 0
 
+
+# SCRIPT TO BE EXECUTED
 if __name__ == '__main__':
     main()
 
-# TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
-# TODO lists with varying length
-# NOTE Let us consider lists are only of numeric values
-# TODO MAYBE subs
-
+# TODO replace the construction of the JSON file with regular expressions
