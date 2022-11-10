@@ -102,8 +102,7 @@ def conv_csm_json(content, headers, flags):
                 if tmp_array[test]:
                         try:
                             elem_test = new.pop(i)
-                            tmp_array[test].insert(i,
-                                            int(elem_test))
+                            tmp_array[test].append(int(elem_test))
                         except ValueError:
                             if (curr_check == 0):
                                 curr_check = len(tmp_array[test])
@@ -118,8 +117,7 @@ def conv_csm_json(content, headers, flags):
                 else:
                     # Initial Search
                     try:
-                        tmp_array[test].insert(i,
-                                        int(new.pop(i)))
+                        tmp_array[test].append(int(new.pop(i)))
                     except ValueError:
                         flagErr = True
 
