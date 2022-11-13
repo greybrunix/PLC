@@ -1,0 +1,30 @@
+[
+	{
+		"Number": "1",
+		"Name": "Name1",
+		"Course": "Mathematics",
+		"Grades": [19, 20, 14, 10],
+		"Area": "Computer Science"
+	},
+	{
+		"Number": "2",
+		"Name": "Name2",
+		"Course": "Philosophy",
+		"Grades": [20, 19, 13, 19, 20, 10],
+		"Area": "Political Science"
+	},
+	{
+		"Number": "3",
+		"Name": "Name3",
+		"Course": "Philosophy",
+		"Grades": [20, 18, 16],
+		"Area": "Political Science"
+	},
+	{
+		"Number": "4",
+		"Name": "Name4",
+		"Course": "Philosophy",
+		"Grades": [20, 20, 17, 18, 19],
+		"Area": "Natural Languages"
+	}
+]

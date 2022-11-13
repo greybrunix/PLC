@@ -1,0 +1,5 @@
+Number,Name,Course,Grades{3,6},,,,,,,Area,Average{3,6}::AVG,,,,,,
+1,Name1,Mathematics,19,20,14,10,,,Computer Science,19,20,14,10,,
+2,Name2,Philosophy,20,19,13,19,20,10,Political Science,20,19,13,19,20,10
+3,Name3,Philosophy,20,18,16,,,,Political Science,20,18,16,,,
+4,Name4,Philosophy,20,20,17,18,19,,Natural Languages,20,20,17,18,19,

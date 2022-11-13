@@ -2,6 +2,7 @@ import re
 import sys
 
 
+# SECTION FOR AGGREGATION FUNCTIONS
 def SUM(li):
     res = 0
     for el in li:
@@ -28,116 +29,130 @@ def MIN(li):
             res = el
     return res
 
-def conv_csm_json(content, headers, flags):
+# FUNCTION THAT CREATES THE JSON FILE
+def conv_csv_json(content, headers, flags):
     # SECTION 1 - Preamble
     new = re.sub(r'([A-Za-z ]*)\n',r'\1',content)
     new = re.split(r',',new); # NOTE separates content by commas
     json_object = ""; tmp_array = {}
     tmp_head = headers.copy(); # NOTE safeguarding the headers list
-    flag = 0; i = 0
-
-    flagM = 0; flagAg = 0; flagErr = 0
+    flag = False; i = 0
+    curr_check = 0
+    flagM = False; flagAg = False; flagErr = False
     # NOTE flags meanings:
     # flag <- List has been found
     # flagM <- upper bound is M and not N
     # flagAg <- Aggregation function to be applied at end
     # flagErr <- Error was found
-
+    patternreg = "\t\"qwe\": \"yui\",\n\t"
+    patternlis = "\t\"asd\": hjk,\n\t"
+    patternerg = "\t\"zxc\": \"nm,\"\n\t"
+    patterneli = "\t\"123\": 789\n\t"
 
     # SECTION 2 - List SEARCHING
     # A for does not provide enough control
     while i < (len(tmp_head)-1) and not flagErr:
         if tmp_head[i] == tmp_head[i+1]: # NOTE we found a list
-            flag = 1; test = str(tmp_head[i]); tmp_array[test] = []
+            flag = True; test = str(tmp_head[i]); tmp_array[test] = []
             N = int(flags[test][0])
-            if (flags[test][1]):
-                try:
-                    # Checks if the list is of N,M format
-                    M = int(flags[test][1])
-                    flagM = 1
+            try:
+                if (flags[test][1]):
                     try:
+                    # Checks if the list is of N,M format
+                        M = int(flags[test][1])
+                        flagM = True
+                        try:
                         # Checks if the list has an agreg function
-                        if flags[test][2]:
-                            agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                           flags[test][2])
-                            flagAg = 1
-                    except IndexError:
+                            if flags[test][2]:
+                                agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                               flags[test][2])
+                                flagAg = True
+                        except IndexError:
                         # If there is no agreg function
-                        agreg = ''
-                        flagAg = 0
-                except ValueError:
+                            agreg = ''
+                            flagAg = False
+                    except ValueError:
                     # There is an agreg function
-                    M = N
-                    agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                   flags[test][1])
+                        M = N
+                        agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                       flags[test][1])
 
-                    flagM = 0; flagAg = 1
+                        flagM = False; flagAg = True
+            except IndexError:
+                flagM = False; flagAg = False;
+                M = N; agreg = ''
         while flag and not flagErr:
             if (test not in tmp_head): 
                 # NOTE that there must be spaces in varying size lists,
                 # TRIVIAL implementation
                 # This is due to removing from tmp_head
                 if flagAg:
-                    tmp_array[test] = eval(agreg+'('+
-                                           str(tmp_array[test])+')')
+                    try:
+                        tmp_array[test] = eval(agreg+'('+
+                                              str(tmp_array[test])+')')
+                    except SyntaxError:
+                        flagErr = True
                 # Reset flags
-                flag = 0; flagM = 0; flagAg = 0;
+                flag = False; flagM = False; flagAg = False;
                 new.insert(i,tmp_array[test])
                 tmp_head.insert(i,test)
                 # Reset Values
-                del N; del M; del agreg
+                curr_check = 0
+                del N; del M; del agreg; del elem_test
             if flag:
                 tmp_head.pop(i)
                 # Regular Search
                 if tmp_array[test]:
-                    try:
-                        tmp_array[test].insert(i,
-                                        int(new.pop(i)))
-                    except ValueError:
-                        if (new[i] == '' and flagM and
-                         len(tmp_array[test]) >= N and
-                         len(tmp_array[test]) <= M):
-                            new.pop(i)
-                        # TODO
-                        # Check why it only allows N or M
-                        else:
-                            flagErr = 1
+                        try:
+                            elem_test = new.pop(i)
+                            tmp_array[test].append(int(elem_test))
+                        except ValueError:
+                            if (curr_check == 0):
+                                curr_check = len(tmp_array[test])
+                            if (flagM and elem_test == '' and
+                             curr_check >= N and 
+                             curr_check <= M):
+                                curr_check += 1
+                            else:
+                                flagErr = True
+                # NOTE the try does remove the value from new
+                # Thus it is safer to remove to a safe variable
                 else:
                     # Initial Search
                     try:
-                        tmp_array[test].insert(i,
-                                        int(new.pop(i)))
+                        tmp_array[test].append(int(new.pop(i)))
                     except ValueError:
-                        flagErr = 1
+                        flagErr = True
 
         i= i+1; # NOTE iterate the rest of the content
 
     # SECTION 3 - Writing to buffer
 
-    # TODO: replace this with regex
     if not flagErr:
         for i, v in zip(tmp_head[:-1], new[:-1]):
-            if isinstance(v,list):
-                json_object += "\t\""+i+""+"\": " +str(v)+",\n\t"
+            if (isinstance(v,list)):
+                json_object += re.sub(r'asd\": hjk',
+                                      r''+i+'\": '+str(v)+r'',
+                                    patternlis,count=1)
             else:
-                json_object += "\t\""+i+""+"\": \""+str(v)+"\",\n\t"
-    # NOTE final element
-        if isinstance(new[-1], list):
-            json_object += "\t\""+tmp_head[-1]+"\": "
-            json_object += str(new[-1])+"\n\t"
+                json_object += re.sub(r'qwe\": \"yui',
+                                      r''+i+'\": \"'+v+r'',
+                                      patternreg,count=1)
+        if (isinstance(new[-1],list)):
+            json_object += re.sub(r'123\": 789',
+                                  r''+tmp_head[-1]+'\": '+str(new[-1]),
+                                  patterneli,count=1)
         else:
-            json_object += "\t\""+tmp_head[-1]+"\": \""
-            json_object += str(new[-1])+"\"\n\t"
+            json_object += re.sub(r'zxc\": \"nm,',
+                                  r''+tmp_head[-1]+'\": \"'+new[-1]+r'',
+                                  patternerg,count=1)
     else:
         raise ValueError
     return json_object
 
+
+# MAIN FUNCTION
 def main():
-
-
-    agrev_func = {'::AVG', '::SUM',
-                  '::COUNT', '::MAX',
-                  '::MIN'}
 
     # SECTION 1 - Getting the csv file
     file = input("Insert name of file:\n>> ")
@@ -159,12 +174,12 @@ def main():
     headers = lines.pop(0)
     tst = re.findall(r'([A-Za-z0-9 \_\-]+){([0-9]+)'
                      '(,([0-9]+))?}(::[A-Z]+)?',headers) 
-
+# 'Notas{3,5}::AVG'
+# (NOTAS) (3) '' '' ''
     matches_list = []
     flags = {}
     if tst:
         for x in tst:
-
             N = int(x[1])
             if (x[3]):
                 N = int(x[3])
@@ -176,25 +191,20 @@ def main():
                             )
             x = list(x)
             flags[x[0]] = []
-            if x[2]:
-
+            if x[1]: # N
                 flags[x[0]].append(int(x[1]))
-            if x[3]:
+            if x[3]: # M
                 flags[x[0]].append(int(x[3]))
-            if x[-1]:
+            if x[-1]: # Function
                 flags[x[0]].append(x[-1])
-            if x[-1] and x[-1] not in agrev_func:
-                sys.exit("Invalid Agregation function.\n")
             x.insert(1,'{');x.insert(4,'}')
             x.pop(5)
             matches_list.append(''.join(x))
         headers = re.split(r'(?<!{\d),(?!\d})', headers)
         for x in matches_list:
-            headers.remove(x)
+            headers.remove(x) # List creation removed
     else:
         headers = re.split(r',', headers)
-    # NOTE considering only one list can be accepted
-    # TODO maybe use findall to get all instances of list creations
     final = lines.pop(len(lines)-1)
 
     # SECTION 3 - Creating a buffer with JSON file and writing to it
@@ -204,23 +214,19 @@ def main():
 
             js_object = "\t{\n\t"
             try:
-                js_object += conv_csm_json(line, headers, flags)
+                js_object += conv_csv_json(line, headers, flags)
             except ValueError:
                 sys.exit("Incorrectly made CSV file\n")
             js_object += "},\n"; f.write(js_object)
         js_object = "\t{\n\t"
         try:
-            js_object += conv_csm_json(final, headers, flags)
+            js_object += conv_csv_json(final, headers, flags)
         except ValueError:
             sys.exit("Incorrectly made CSV file\n")
         js_object += "}\n]"; f.write(js_object); f.close()
     return 0
 
+
+# SCRIPT TO BE EXECUTED
 if __name__ == '__main__':
     main()
-
-# TODO allowed agreg function, SUM, AVG, MAX, MIN # NOTE use evals
-# TODO lists with varying length
-# NOTE Let us consider lists are only of numeric values
-# TODO MAYBE subs
-
