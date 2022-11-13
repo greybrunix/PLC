@@ -30,7 +30,7 @@ def MIN(li):
     return res
 
 # FUNCTION THAT CREATES THE JSON FILE
-def conv_csm_json(content, headers, flags):
+def conv_csv_json(content, headers, flags):
     # SECTION 1 - Preamble
     new = re.sub(r'([A-Za-z ]*)\n',r'\1',content)
     new = re.split(r',',new); # NOTE separates content by commas
@@ -44,7 +44,10 @@ def conv_csm_json(content, headers, flags):
     # flagM <- upper bound is M and not N
     # flagAg <- Aggregation function to be applied at end
     # flagErr <- Error was found
-
+    patternreg = "\t\"qwe\": \"yui\",\n\t"
+    patternlis = "\t\"asd\": hjk,\n\t"
+    patternerg = "\t\"zxc\": \"nm,\"\n\t"
+    patterneli = "\t\"123\": 789\n\t"
 
     # SECTION 2 - List SEARCHING
     # A for does not provide enough control
@@ -125,20 +128,24 @@ def conv_csm_json(content, headers, flags):
 
     # SECTION 3 - Writing to buffer
 
-    # TODO: replace this with regex
     if not flagErr:
         for i, v in zip(tmp_head[:-1], new[:-1]):
-            if isinstance(v,list):
-                json_object += "\t\""+i+""+"\": " +str(v)+",\n\t"
+            if (isinstance(v,list)):
+                json_object += re.sub(r'asd\": hjk',
+                                      r''+i+'\": '+str(v)+r'',
+                                    patternlis,count=1)
             else:
-                json_object += "\t\""+i+""+"\": \""+str(v)+"\",\n\t"
-    # NOTE final element
-        if isinstance(new[-1], list):
-            json_object += "\t\""+tmp_head[-1]+"\": "
-            json_object += str(new[-1])+"\n\t"
+                json_object += re.sub(r'qwe\": \"yui',
+                                      r''+i+'\": \"'+v+r'',
+                                      patternreg,count=1)
+        if (isinstance(new[-1],list)):
+            json_object += re.sub(r'123\": 789',
+                                  r''+tmp_head[-1]+'\": '+str(new[-1]),
+                                  patterneli,count=1)
         else:
-            json_object += "\t\""+tmp_head[-1]+"\": \""
-            json_object += str(new[-1])+"\"\n\t"
+            json_object += re.sub(r'zxc\": \"nm,',
+                                  r''+tmp_head[-1]+'\": \"'+new[-1]+r'',
+                                  patternerg,count=1)
     else:
         raise ValueError
     return json_object
@@ -207,13 +214,13 @@ def main():
 
             js_object = "\t{\n\t"
             try:
-                js_object += conv_csm_json(line, headers, flags)
+                js_object += conv_csv_json(line, headers, flags)
             except ValueError:
                 sys.exit("Incorrectly made CSV file\n")
             js_object += "},\n"; f.write(js_object)
         js_object = "\t{\n\t"
         try:
-            js_object += conv_csm_json(final, headers, flags)
+            js_object += conv_csv_json(final, headers, flags)
         except ValueError:
             sys.exit("Incorrectly made CSV file\n")
         js_object += "}\n]"; f.write(js_object); f.close()
@@ -223,5 +230,3 @@ def main():
 # SCRIPT TO BE EXECUTED
 if __name__ == '__main__':
     main()
-
-# TODO replace the construction of the JSON file with regular expressions
