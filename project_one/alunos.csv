@@ -1,4 +1,5 @@
-NO,Name,Course,Grades{3,5}::AVG,,,,,,Cena,Stuff{2,4},,,,
-3162,Lin Manuel,Theater,19,20,13,20,20,Cena,10,20,,
-7777,Alan Turing,Mathematics,19,20,14,20,,Cena,10,20,,
-264,Michel Foucault,Philosophy,20,19,13,19,20,Cena,10,20,,
+Number,Name,Course,Grades{3,6},,,,,,,Area
+1,Name1,Mathematics,19,20,14,10,,,Computer Science
+2,Name2,Philosophy,20,19,13,19,20,10,Political Science
+3,Name3,Philosophy,20,18,16,,,,Political Science
+4,Name4,Philosophy,20,20,17,18,19,,Natural Languages
