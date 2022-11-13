@@ -51,80 +51,80 @@ def conv_csv_json(content, headers, flags):
 
     # SECTION 2 - List SEARCHING
     # A for does not provide enough control
-    while i < (len(tmp_head)-1) and not flagErr:
-        if tmp_head[i] == tmp_head[i+1]: # NOTE we found a list
-            flag = True; test = str(tmp_head[i]); tmp_array[test] = []
-            N = int(flags[test][0])
-            try:
-                if (flags[test][1]):
-                    try:
-                    # Checks if the list is of N,M format
-                        M = int(flags[test][1])
-                        flagM = True
+    if flags:
+        while i < (len(tmp_head)-1) and not flagErr:
+            if tmp_head[i] == tmp_head[i+1]: # NOTE we found a list
+                flag = True; test = str(tmp_head[i]); tmp_array[test] = []
+                N = int(flags[test][0])
+                try:
+                    if (flags[test][1]):
                         try:
-                        # Checks if the list has an agreg function
-                            if flags[test][2]:
-                                agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                               flags[test][2])
-                                flagAg = True
-                        except IndexError:
-                        # If there is no agreg function
-                            agreg = ''
-                            flagAg = False
-                    except ValueError:
-                    # There is an agreg function
-                        M = N
-                        agreg = re.sub(r'::([A-Z]+)',r'\1',
-                                       flags[test][1])
-
-                        flagM = False; flagAg = True
-            except IndexError:
-                flagM = False; flagAg = False;
-                M = N; agreg = ''
-        while flag and not flagErr:
-            if (test not in tmp_head): 
+                        # Checks if the list is of N,M format
+                            M = int(flags[test][1])
+                            flagM = True
+                            try:
+                            # Checks if the list has an agreg function
+                                if flags[test][2]:
+                                    agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                                  flags[test][2])
+                                    flagAg = True
+                            except IndexError:
+                            # If there is no agreg function
+                                agreg = ''
+                                flagAg = False
+                        except ValueError:
+                        # There is an agreg function
+                            M = N
+                            agreg = re.sub(r'::([A-Z]+)',r'\1',
+                                           flags[test][1])
+                            flagM = False; flagAg = True
+                except IndexError:
+                    flagM = False; flagAg = False;
+                    M = N; agreg = ''
+            while flag and not flagErr:
+                if (test not in tmp_head): 
                 # NOTE that there must be spaces in varying size lists,
                 # TRIVIAL implementation
-                # This is due to removing from tmp_head
-                if flagAg:
-                    try:
-                        tmp_array[test] = eval(agreg+'('+
-                                              str(tmp_array[test])+')')
-                    except SyntaxError:
-                        flagErr = True
-                # Reset flags
-                flag = False; flagM = False; flagAg = False;
-                new.insert(i,tmp_array[test])
-                tmp_head.insert(i,test)
-                # Reset Values
-                curr_check = 0
-                del N; del M; del agreg; del elem_test
-            if flag:
-                tmp_head.pop(i)
-                # Regular Search
-                if tmp_array[test]:
+                # NOTE This is due to removing from tmp_head
+                    if flagAg:
                         try:
-                            elem_test = new.pop(i)
-                            tmp_array[test].append(int(elem_test))
-                        except ValueError:
-                            if (curr_check == 0):
-                                curr_check = len(tmp_array[test])
-                            if (flagM and elem_test == '' and
-                             curr_check >= N and 
-                             curr_check <= M):
-                                curr_check += 1
-                            else:
-                                flagErr = True
+                            tmp_array[test] = eval(agreg+'('+
+                                                  str(tmp_array[test])+')')
+                        except SyntaxError:
+                            flagErr = True
+                    # Reset flags
+                    flag = False; flagM = False; flagAg = False;
+                    new.insert(i,tmp_array[test])
+                    tmp_head.insert(i,test)
+                    # Reset Values
+                    curr_check = 0
+                    del N; del M; del agreg; del elem_test
+                if flag:
+                    tmp_head.pop(i)
+                    # Regular Search
+                    if tmp_array[test]:
+                            try:
+                                elem_test = new.pop(i)
+                                tmp_array[test].append(int(elem_test))
+                            except ValueError:
+                                if (curr_check == 0):
+                                    curr_check = len(tmp_array[test])
+                                if (flagM and elem_test == '' and
+                                 curr_check >= N and 
+                                curr_check <= M):
+                                    curr_check += 1
+                                else:
+                                    flagErr = True
                 # NOTE the try does remove the value from new
                 # Thus it is safer to remove to a safe variable
-                else:
-                    # Initial Search
-                    try:
-                        tmp_array[test].append(int(new.pop(i)))
-                    except ValueError:
-                        flagErr = True
+                    else:
+                        # Initial Search
+                        try:
+                            tmp_array[test].append(int(new.pop(i)))
+                        except ValueError:
+                            flagErr = True
 
-        i= i+1; # NOTE iterate the rest of the content
+            i= i+1; # NOTE iterate the rest of the content
 
     # SECTION 3 - Writing to buffer
 
@@ -136,7 +136,7 @@ def conv_csv_json(content, headers, flags):
                                     patternlis,count=1)
             else:
                 json_object += re.sub(r'qwe\": \"yui',
-                                      r''+i+'\": \"'+v+r'',
+                                      r''+i+'\": \"'+str(v)+r'',
                                       patternreg,count=1)
         if (isinstance(new[-1],list)):
             json_object += re.sub(r'123\": 789',
@@ -144,7 +144,7 @@ def conv_csv_json(content, headers, flags):
                                   patterneli,count=1)
         else:
             json_object += re.sub(r'zxc\": \"nm,',
-                                  r''+tmp_head[-1]+'\": \"'+new[-1]+r'',
+                                  r''+tmp_head[-1]+'\": \"'+str(new[-1])+r'',
                                   patternerg,count=1)
     else:
         raise ValueError
