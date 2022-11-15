@@ -12,8 +12,10 @@
 \usepackage[portuguese,main=english]{babel}
 \usepackage{cite}
 \usepackage{listings}
+\usepackage{titlesec}
 \usepackage{color}
 \parindent=0pt
+\titleformat{\section}{\normalfont\Large\bfseries}{\S\thesection}{1em}{}
 \parskip=2pt
 \setlength{\oddsidemargin}{-1cm}
 \setlength{\textwidth}{18cm}
@@ -87,9 +89,9 @@ allow for the conversion of any XLS file variation into JSON.
 \chapter{Report} \label{chap:report}
 \section{Introduction} \label{intro} 
 \subsection{CSV to JSON conversion}
-\subsubsection*{Introduction to the Report} This report is structured by 
-the literate component itself \ref{chap:report} and by the code component
-which shall contain all the code used for this project \ref{chap:code}.
+\subsubsection{Introduction to the Report} This report is structured by 
+the literate component itself (\S\ref{chap:report}) and by the code component
+which shall contain all the code used for this project (\S\ref{chap:code}).
 \\
 Within the literate component we introduce the project with a historical
 background of the file formats being studied, why we believe this project
@@ -99,13 +101,13 @@ in this class.
 \\
 After this introduction, we move on towards implementations, design 
 decisions and the finer technical and theoretical aspects of the project
-in the methodology section \ref{methodology}. Here we go into detail on 
+in the methodology section (\S\ref{methodology}). Here we go into detail on 
 regular expressions, the re module, how the properties of CSV were used
 to manipulate the file via regex and how the JSON file was created.
 In this very section there is also a segment dedicated to exemplifying 
 the tests used to verify the proper functioning of the program.
 \\
-The last section of the this chapter is the conclusion \ref{conclusion}
+The last section of the this chapter is the conclusion (\S\ref{conclusion})
 where a brief summary of the results are gathered and insight is given on
 what could've been done and how this project can be expanded on.
 \\
@@ -115,7 +117,7 @@ the code used during this project.
 As standard for a report, the last pages are dedicated towards the
 bibliography.
 
-\subsubsection*{Historical background of CSV and XLS}CSV, or \CSV, is a
+\subsubsection{Historical background of CSV and XLS}CSV, or \CSV, is a
 well known file type for data storage, much like XL, or \XLS, files in 
 the sense that both represent tabular data, however, the major difference
 is that CSV is a plain text file, each line representing a row and each 
@@ -128,7 +130,7 @@ XLS however only came into existence in 1987 with Excel's first Windows
 version, that being Excel 2. \cite{EXCELOR} In 2007, however, XLS was deprecated and the
 use of XML versions of Excel spreadsheets was promoted, thus
 introducing XLSX.
-\subsubsection*{Historical background of JavaScript and JSON}JavaScript
+\subsubsection{Historical background of JavaScript and JSON}JavaScript
 is a programming language famous for being one of the only capable of
 being used on the World Wide Web on the client side for web-page behaviour.
 It was first released in 1995 as an attempt to embed Java and Scheme
@@ -143,7 +145,7 @@ Java applets, JSON files were created, these are code independent,
 as almost any language can parse it, but due to it's inspired syntax from
 JavaScript, it's is most popular for use with this programming language.
 
-\subsubsection*{Importance of this project}Given the historical and
+\subsubsection{Importance of this project}Given the historical and
 practical significance of these three file formats, it is understandable
 how important it is to have a program that can seamlessly convert a CSV
 file into a JSON file, or, perhaps even, a program that converts a XLS 
@@ -156,14 +158,14 @@ send data in the text file from a server to a client, or display it on a
 web page.
 
 
-\subsubsection*{Background of the Project}In this class, it was asked to
+\subsubsection{Background of the Project}In this class, it was asked to
 solve one of five questions, the fifth, the one we chose, is the 
 conversion of a modified CSV format that includes lists and aggregation 
 functions into a JSON file using regular expressions. These lists can be
 of fixed size N or a size between N and M, the aggregation functions were
 left at the students criteria.
 
-\subsubsection*{Expansions of the Project}Considering XLS is nothing more
+\subsubsection{Expansions of the Project}Considering XLS is nothing more
 than a zipped file containing XML files, this conversion should be 
 trivial provided the `renaming' to the zipped file can be done, after
 which, theoretically, we should only need to find the cell data we need
@@ -183,7 +185,7 @@ great importance.
 
 \section{Methodology} \label{methodology}
 \subsection{Theoretical Background} \label{theory}
-\subsubsection*{Regular Expressions}Regular expression are an essential
+\subsubsection{Regular Expressions}Regular expression are an essential
 component of Computer Science, both theoretical and practical, this
 because they were originated in the context of Automaton Theory and Formal Languages.   
 Because regular expressions represent regular languages, we can use 
@@ -193,7 +195,7 @@ all instances or a given amount of matches, this allows for ease of use
 for various actions such as, converting file types correctly, converting
 from a formal language into machine language, sorting, managing data,
 and much more.
-\subsubsection*{Python's re module}In order to work with regular
+\subsubsection{Python's re module}In order to work with regular
 expressions, Python has a built-in module called `re' which allows the
 use of some powerful functions that take a raw string containing a
 regular expression, a string to be analysed and produce, very
@@ -211,7 +213,7 @@ both the parsing of the file, creation of lists, and into the creation of the JS
 file itself.
 \subsection{Practical component} \label{practice}
 
-\subsubsection*{Opening a CSV file} When the program is executed, it will
+\subsubsection{Opening a CSV file} When the program is executed, it will
 ask the user to input the name of a valid CSV file. \\ In order to
 enforce such a prerequisite some defensive code was employed, performing
 the following instructions
@@ -226,7 +228,7 @@ the following instructions
     \item{Opens the file, thus checking if it exists}
 \end{enumerate}
 
-\subsubsection*{Finding all Lists} Finding lists and parsing them so they
+\subsubsection{Finding all Lists} Finding lists and parsing them so they
 are ready to be worked with, might be one the aspects of this project,
 that, alongside the manipulation itself of the lists and the attempt at
 converting XL files to CSV that required more work than most. \\
@@ -252,7 +254,7 @@ In order to do so however the following structure was adhered to:
     \item{Iterates through the results again and removes list creations
         from the headers}
 \end{enumerate}
-\subsubsection*{Writing to a file} The conversion itself of the CSV file
+\subsubsection{Writing to a file} The conversion itself of the CSV file
 to the JSON file is done via writing the structure of the JSON file to a buffer
 and plugging in the desired contents, this a very trivial and standard
 implementation, requiring only to open the file in write mode, creating
@@ -264,12 +266,13 @@ what happens in the code.\\
 Doing so is nothing more than finding a pattern in how the elements of the JSON file
 are written, after which we only need to use the re.sub function and thus have a 
 buffer with all the JSON information as required.
-\subsubsection*{Creating each element of the Object}
+\subsubsection{Creating each element of the Object}
 To create the object's elements we need to parse each row of the CSV file,
-done so with a function in \ref{ex5py},\textit{conv\_csv\_json(content)}, which,
+done so with a function (\S\ref{ex5py}),\textit{conv\_csv\_json(content)}, which,
 through the use of flags and some temporary data structures, we are able to
 either write to the buffer or create a list as a result.
-\paragraph*{Flags and Data Structures Used} This function has the following
+
+\paragraph{Flags and Data Structures Used} This function has the following
 arguments: \textit{content, headers, and flags}. \textit{Content} contains
 a line to be parsed, \textit{header} is the first line of the CSV file with the alterations
 previously mention if lists exist, and the \textit{flags} an associative array
@@ -288,8 +291,9 @@ of the row, a list was found, \textit{flagM} which checks if the upper bound is 
 and \textit{flagErr} that indicates whether or not an error was found during the reading
 of the CSV file. This program also uses \textit{curr\_check} to count the difference
 between the size of \textit{tmp\_array}'s lists and M.
-\paragraph*{Iterating and Parsing the List}
-From line 54 to line 127 of the code \ref{ex5py}, the program will iterate the
+
+\paragraph{Iterating and Parsing the List}
+From line 54 to line 127 of the code (\S\ref{ex5py}), the program will iterate the
 contents of \textit{tmp\_head} in search of repeated, sequential elements.\\
 When such a pattern is found, the flag variable is updated, the string that is repeated
 is stored in the \textit{test} variable, \textit{tmp\_array} is updated to include \textit{test} as a
@@ -305,7 +309,7 @@ When, finally, we have no instances of \textit{test} in \textit{tmp\_head}, we c
 insert the resulting list to the content data structure new, and reinsert test
 into \textit{tmp\_head}.\\
 Having done so, we need only continue iterating through the list.
-\paragraph*{Using Aggregation Functions}
+\paragraph{Using Aggregation Functions}
 After a list is fully created, the program only needs to use that list as
 an argument to another previously defined function. We chose that it only
 made sense to allow for SUM, COUNT, AVG, MAX and MIN, easy to implement
@@ -315,7 +319,7 @@ built-in python function \textit{eval(string)} to perform these procedures.
 In view of proving the proper functioning of the program, some exemplifying tests were
 used.
 
-\subsubsection*{Inputs}
+\subsubsection{Inputs}
 \begin{itemize}
     \item The following input was a CSV `database' that one of the Co-Authors
         of this report used in order to coordinate preferences for group and individual tasks
@@ -323,35 +327,35 @@ used.
         people in the `database', the names will be replaced with identifying
         numbers.
     \lstinputlisting[label={dataCSV},
-    caption=Database Input\ref{dataJSON}]{data.csv}
+    caption=Database Input (Label \ref{dataJSON})]{data.csv}
     Such that 0 represents no interest in the indexed task, 1 represents
     interest, and 2 meaning increased interest.
 \item The following test, however is a more generic input that tests 
     variable size lists.
     \lstinputlisting[label={alunosCSV},
-    caption=Students input\ref{alunosJSON}]{alunos.csv}
+    caption=Students input (Label \ref{alunosJSON})]{alunos.csv}
 \item The final test consolidates all the previous tests, having both
     varying sized lists, full lists, and aggregation functions over
     both of these forms of functions.
     \lstinputlisting[label={alunos1CSV},
-    caption=Students with averages input\ref{alunos1JSON}]{alunos1.csv}
+    caption=Students with averages input (Label \ref{alunos1JSON})]{alunos1.csv}
 \end{itemize}
-\subsubsection*{Outputs}
+\subsubsection{Outputs}
 The program works as expected as can be seen in the output to the
 previously defined inputs. \\ The outputs are as follows:
 \lstinputlisting[label={dataJSON},
-                 caption=Database output\ref{dataCSV}]{data.json}
+                 caption=Database output (Label \ref{dataCSV})]{data.json}
 \lstinputlisting[label={alunosJSON},
-                 caption=Students output\ref{alunosCSV}]{alunos.json}
+                 caption=Students output (Label \ref{alunosCSV})]{alunos.json}
 \lstinputlisting[label={alunos1JSON},
-                 caption=Students average output\ref{alunos1CSV}]{alunos1.json}
+                 caption=Students average output (Label \ref{alunos1CSV})]{alunos1.json}
 \subsection{Preprocessing XL files}
 Throughout this report it was mentioned that our project would intend to 
 perform efficient conversions of Excel Files to CSV files, a conversion that
 at first glance seems trivial, however it was unanimously decided it would be a
 good idea to not go ahead with the development of a preprocessing component to this
-program. This decision will be explained in a following section \ref{section:XLCOMP}
-\subsubsection*{How it can be done} If one wishes to convert an Excel file into a
+program. This decision will be explained in a following section (\S\ref{subsubsection:XLCOMP})
+\subsubsection{How it can be done} If one wishes to convert an Excel file into a
 \CSV file, one would need to find a way to access the XML files that constitute
 any XL file, normally this can be done via renaming the XL file so it's extension
 is `.zip', this can be done with a python script that uses two `os' functions:
@@ -377,7 +381,7 @@ some regular expressions, such as one that finds the location and value of
 each cell and stores that as key and value in an associative array.\\ After which
 one would iterate through the sharedStrings file, use regex to save the values
 via tags, and replace the indexes in the first dictionary with the strings.
-\subsubsection*{Complications and why it was not achieved} \label{section:XLCOMP}
+\subsubsection{Complications and why it was not achieved} \label{subsubsection:XLCOMP}
 Even though this was attempted it was scrapped as finding a solution to
 the problem of recognising whether or not a digit in the sheet file is an
 index or a numerical value is of extreme difficulty.\\
@@ -389,12 +393,12 @@ not implement it within the scope of this project.
 This project aptly tested understanding of Python, knowledge of regular expressions,
 our creativity, our teamwork, and, with the writing of this document,
 our understanding of what we accomplished and what we could've done to improve it.\\
-Indeed, the reader may find some issues in our code \ref{ex5py}, namely, as we see it,
+Indeed, the reader may find some issues in our code (\S\ref{ex5py}), namely, as we see it,
 how unreadable some segments of the code are due to how verbose and compact they are,
 particularly the segments of code where Lists are being processed, despite the code being
 well commented, in hopes of lightening the effects of such a `flaw'.\\
 However, even though we accomplished what we set out to achieve with what was proposed for the
-project, as was mentioned in \ref{section:XLCOMP} the last section before this conclusion,
+project, as was mentioned in (\S\ref{subsubsection:XLCOMP}) the last section before this conclusion,
 we were not able to implement preprocessing of XL files in our project.
 Which is understandable considering the time frame we had to operate under and
 the requirements such a task really had, however, of course, it is an important analysis to make,
@@ -402,7 +406,7 @@ knowing that preprocessing is a very important requirement, it is, indeed, an im
 that can be worked on in the future. Provided there is time and resources to understand in depth
 how Excel stores and loads data. Not only this, but perhaps with an enhancement to the readability
 of the code, this could be a useful piece of software, as was shown to be in the data example
-\ref{dataCSV} \ref{dataJSON}.\\
+(Label \ref{dataCSV} and Label \ref{dataJSON}).\\
 Having created a program that correctly converts the required CSV file format
 into a JSON file format using regular expressions, python, and good programming practices, and
 by also ellucidating on how complex some seemingly trivial tasks can be,
