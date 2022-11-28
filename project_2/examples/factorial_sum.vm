@@ -1,0 +1,27 @@
+pusha main
+call
+stop
+
+main:
+
+pushf 0.2
+pushf 0.1
+pushf 0
+
+start
+pusha sum
+call
+
+
+pushg 2
+writef
+
+return
+
+sum:
+pushg 0
+pushg 1
+fadd
+storeg 2
+
+return

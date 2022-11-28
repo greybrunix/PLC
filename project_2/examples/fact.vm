@@ -1,0 +1,51 @@
+pusha main
+call
+pushi 5
+popn
+stop
+
+main:
+
+pushi 4 // N = 2
+
+start
+pusha fact
+call
+
+pushg 1
+writei
+
+return
+
+fact:
+pushg 0
+pushi 1
+equal
+not
+JZ END1
+
+pushg 0
+pushi 1
+sup
+JZ END
+
+pushi 1
+
+start
+pushg 0
+pushg 1
+mul
+storeg 1
+
+pushg 0
+pushi 1
+sub
+storeg 0
+
+pusha fact
+call
+END:
+return
+END1:
+pushg 0
+return

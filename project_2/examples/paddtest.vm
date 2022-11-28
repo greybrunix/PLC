@@ -1,0 +1,63 @@
+pusha main
+call
+stop
+
+main:
+alloc 4 // array
+pushi 0 // i
+pushi 4 // N-i
+pushi 0 // res var
+// Get the values for the array
+pushg 0
+pushi 5
+pushg 0
+pushi 2
+pushg 0
+pushi 4
+pushg 0
+pushi 3
+// Assigns the values to the array
+store 0
+store 1
+store 2
+store 3
+
+start
+
+L55:
+// Checks if N-i == 0
+pushg 2
+pushi 0
+sup
+JZ L56
+
+// gets array[i]
+pushg 0
+pushg 1
+padd
+pushi 0
+loadn
+// Gets res and updates it
+pushg 3
+add
+storeg 3
+
+// Updates N-i
+pushg 2
+pushi 1
+sub
+storeg 2
+
+// Updates i
+pushg 1
+pushi 1
+add
+storeg 1
+
+JUMP L55
+L56:
+pushg 3
+writei
+
+return
+
