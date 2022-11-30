@@ -64,8 +64,8 @@ def p_code_logic(p):
         code_logic :  
         code_logic : atributions
         code_logic : conditionals
-    '''#    code_logic : function_calls
-    #'''
+        code_logic : function_calls
+    '''
     pass
 def p_atributions(p):
     'atributions : atribution code_logic'
@@ -95,7 +95,8 @@ def p_factor(p):
                | ID
                | LPAREN expression RPAREN
                | NOT expression
-               | SUB expression 
+               | SUB expression
+               | call_function
     '''
     pass
 def p_ad_op(p):
@@ -155,6 +156,11 @@ def p_cond_code(p):
         cond_code : BLOCK_START code_logic BLOCK_END
     '''
     pass
+def p_function_calls(p):
+    '''
+        function_calls : call_function code_logic
+    '''
+    pass
 def p_call_function(p):
     '''
         call_function : ID args_lst
@@ -162,16 +168,20 @@ def p_call_function(p):
     pass
 def p_args_lst(p):
     '''
-        args_lst : LPARENT RPARENT
-                 | LPARENT args RPARENT
+        args_lst : LPAREN RPAREN
+                 | LPAREN arg args RPAREN
     '''
+    pass
+def p_arg(p):
+    'arg : ID'
     pass
 def p_args(p):
     '''
-        arg : ID
-            | ID ARRCONT args
+        args : 
+             | ARRCONT arg args
     '''
     pass
+
 def p_data_type(p):
     ''' 
         data_type : base_type
@@ -213,11 +223,8 @@ if __name__ == '__main__':
     if parser.success:
         print("Success")
 
-# NOTE Pointers recognized
-# TODO recognize function calls
-# NOTE function calls can happen 1) anywhere in the function
-# NOTE 2) as atributions
-# NOTE 3) (Allowing recursion) in the return instruction
+# NOTE Pointers recognized DONE
+# NOTE recognize function calls DONE
 
 
 # TODO 1) INTEGERS # PROJETO
