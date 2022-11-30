@@ -155,7 +155,23 @@ def p_cond_code(p):
         cond_code : BLOCK_START code_logic BLOCK_END
     '''
     pass
-
+def p_call_function(p):
+    '''
+        call_function : ID args_lst
+    '''
+    pass
+def p_args_lst(p):
+    '''
+        args_lst : LPARENT RPARENT
+                 | LPARENT args RPARENT
+    '''
+    pass
+def p_args(p):
+    '''
+        arg : ID
+            | ID ARRCONT args
+    '''
+    pass
 def p_data_type(p):
     ''' 
         data_type : base_type
