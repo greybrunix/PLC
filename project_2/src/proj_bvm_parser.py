@@ -173,7 +173,7 @@ def p_args_lst(p):
     '''
     pass
 def p_arg(p):
-    'arg : ID'
+    'arg : expression'
     pass
 def p_args(p):
     '''
