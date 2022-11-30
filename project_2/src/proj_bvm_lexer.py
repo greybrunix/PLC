@@ -3,55 +3,48 @@ import sys
 
 
 reserved = {
-        'IF' : 'IF',
-        'ELSE' : 'ELSE',
-        'WHILE' : 'WHILE',
-        'INT'   : 'INT',
-        'CHAR'  : 'CHAR',
-        'FLOAT' : 'FLOAT',
+        'IF'    : 'IF','ELSE'  : 'ELSE',
+        'WHILE' : 'WHILE','INT'   : 'INT',
+        'CHAR'  : 'CHAR','FLOAT' : 'FLOAT',
         'RETURN': 'RETURN'
-        'GOTO'  : 'GOTO',
-        'SWITCH': 'SWITCH',
-        'CASE'  : 'CASE'
 }
 
 # List of Tokens
 tokens = [
-        'INTEGER',
-        'INTARIT',
-        'INTLOG',
-        'REL',
-        'CONDLOG',
-        'ID',
-        'ATRIB',
-        'INSEND',
-        'ARRCONT',
-        'LPAREN',
-        'RPAREN',
-        'ARRINDL',
-        'ARRINDR',
-        'BLOCK_START',
+        'INTEGER','SUM','MULT','DIV','MODULO','SUB',
+        'ID','XOR','AND','OR','SHIFTLEFT','SHIFTRIGHT',
+        'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
+        'CONDAND','CONDOR','ATRIB','INSEND','ARRCONT',
+        'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
         'BLOCK_END'
 ] + list(reserved.values())
 
-t_INTARIT   = r'[\+\-\*\/]'
-t_CONDLOG   = r'\&\&|\|\|'
-t_INTLOG    = r'[\^\&\|\!]|\>\>|\<\<'
-t_REL       = r'<=|>=|==|!=|<|>'
-t_ATRIB     = r'\='
-t_INSEND    = r'\x3B'
-t_ARRCONT   = r'\x2C'
-t_ARRINDL   = r'\x5B'
-t_ARRINDR   = r'\x5D'
-t_LPAREN    = r'\x28'
-t_RPAREN    = r'\x29'
-t_BLOCK_START = r'\{'
-t_BLOCK_END = r'\}'
+########### INTEGER ARITHMETIC ############
+t_SUM   = r'\+';t_MULT  = r'\*'
+t_DIV   = r'\/';t_MODULO = r'\%'
+t_SUB   = r'\-'
+########## BITWISE ##################
+t_XOR = r'\^';t_AND = r'\&'
+t_OR  = r'\|';t_NOT = r'\!'
+t_SHIFTLEFT = r'\<\<';t_SHIFTRIGHT = r'\>\>'
+########### BOOLEAN #################
+t_GEQ = r'\>\=';t_LEQ = r'\<\='
+t_DIF = r'\!\=';t_EQ = r'\=\='
+t_LESSER  = r'\<';t_GREATER = r'\>'
+t_CONDAND = r'\&\&';t_CONDOR = r'\|\|'
+######### SYNTAX RELATIVE SYMBOLS ##########
+t_ATRIB     = r'\=';t_INSEND    = r'\x3B' # ;
+t_ARRCONT   = r'\x2C' # ,
+t_ARRINDL   = r'\x5B' # [
+t_ARRINDR   = r'\x5D' # ]
+t_LPAREN    = r'\x28' # (
+t_RPAREN    = r'\x29' # )
+t_BLOCK_START = r'\{';t_BLOCK_END = r'\}'
 
 
 def t_COMMENT(t):
     r'\/\*(.|\n)*?\*\/'; pass
-    # /* . | \n  *  ? */
+    # Ignores everything between /* */
 
 def t_FLOATING(t):
     r'\d+\.\d+'
@@ -68,7 +61,7 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-t_ignore = '\x20\t'
+t_ignore = '\x20\t' # Spaces and Tabs
 
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])

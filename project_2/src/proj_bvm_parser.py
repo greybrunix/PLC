@@ -4,9 +4,6 @@ import sys
 
 from proj_bvm_lexer import tokens
 
-
-
-
 def p_program(p):
     'program : functions'
     pass
@@ -67,8 +64,8 @@ def p_code_logic(p):
         code_logic :  
         code_logic : atributions
         code_logic : conditionals
-        code_logic : function_calls
-    '''
+    '''#    code_logic : function_calls
+    #'''
     pass
 def p_atributions(p):
     'atributions : atribution code_logic'
@@ -77,7 +74,7 @@ def p_atribution_1(p):
     'atribution : ID ATRIB expression INSEND'
     pass
 def p_atribution_2(p):
-    'atribution : ID ATRIB bool_expression INSEND'
+    'atribution : ID ATRIB conditional_expression INSEND'
     pass
 def p_expression_1(p):
     'expression : term'
@@ -99,28 +96,65 @@ def p_factor(p):
                | LPAREN expression RPAREN
                | NOT expression
                | SUB expression 
-    '''                  # TODO double check not and sub
+    '''
     pass
 def p_ad_op(p):
     '''
-        ad_op : ADD
+        ad_op : SUM
               | SUB
-              | LOGOR
-              | BITOR
+              | OR
+              | XOR
     '''
     pass
 def p_mult_op(p):
     '''
         mult_op : MULT
-                | DIVINT
-                | MOD
-                | LOGAND
-                | BITAND
-                | SHIFTR
-                | SHIFTL
+                | DIV
+                | MODULO
+                | AND
+                | SHIFTRIGHT
+                | SHIFTLEFT
     '''
     pass
 
+def p_conditionals(p):
+    'conditionals : conditional code_logic'
+    pass
+
+def p_conditional_while(p):
+    '''
+        conditional : WHILE conditional_expression cond_code
+    '''
+    pass
+def p_conditional_if(p):
+    '''
+        conditional : IF conditional_expression cond_code
+                    | IF conditional_expression cond_code ELSE cond_code
+    '''
+    pass
+def p_cond_expr(p):
+    '''
+        conditional_expression : expression
+                | LPAREN conditional_expression bool_op conditional_expression RPAREN
+    '''
+    pass
+def p_bool_op(p):
+    '''
+        bool_op : EQ
+                | DIF
+                | LEQ
+                | GEQ
+                | LESSER
+                | GREATER
+                | CONDAND
+                | CONDOR
+    '''
+    pass
+def p_cond_code(p):
+    '''
+        cond_code : BLOCK_START code_logic BLOCK_END
+    '''
+    pass
 
 def p_data_type(p):
     ''' 
@@ -141,6 +175,13 @@ def p_pointer(p):
                 | MULT pointer
     '''
     pass
+def p_code_end(p):
+    '''
+        code_end : RETURN INSEND
+                 | RETURN expression INSEND
+    '''
+    pass
+
 
 def p_error(p):
     parser.success = False
@@ -156,7 +197,11 @@ if __name__ == '__main__':
     if parser.success:
         print("Success")
 
-# NOTE Pointers done
+# NOTE Pointers recognized
+# TODO recognize function calls
+# NOTE function calls can happen 1) anywhere in the function
+# NOTE 2) as atributions
+# NOTE 3) (Allowing recursion) in the return instruction
 
 
 # TODO 1) INTEGERS # PROJETO
@@ -169,7 +214,7 @@ if __name__ == '__main__':
 """
 void swap(float *x, float * y)
 {
-    float * tmp = *y;
+    float tmp = *y;
     *y = *x;
     *x = *tmp;
 }
