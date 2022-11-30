@@ -35,8 +35,15 @@ t_CONDAND = r'\&\&';t_CONDOR = r'\|\|'
 ######### SYNTAX RELATIVE SYMBOLS ##########
 t_ATRIB     = r'\=';t_INSEND    = r'\x3B' # ;
 t_ARRCONT   = r'\x2C' # ,
-t_ARRINDL   = r'\x5B' # [
-t_ARRINDR   = r'\x5D' # ]
+t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
+t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store
+# a[0] = 1;
+# a[1] = 2;
+# b = a[0];
+# writei(b) -> 1
+# a[20] is alloc 20
+
+
 t_LPAREN    = r'\x28' # (
 t_RPAREN    = r'\x29' # )
 t_BLOCK_START = r'\{';t_BLOCK_END = r'\}'

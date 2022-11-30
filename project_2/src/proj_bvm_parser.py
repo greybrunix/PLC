@@ -215,7 +215,7 @@ def p_error(p):
 
 
 if __name__ == '__main__':
-    parser = yacc.yacc()
+    parser = yacc.yacc(debug=False,write_tables=False)
     with open(sys.argv[1],'r') as f:
         cont = f.read()
     parser.success = True
@@ -225,7 +225,10 @@ if __name__ == '__main__':
 
 # NOTE Pointers recognized DONE
 # NOTE recognize function calls DONE
-
+# TODO recognize arrays
+#   NOTE Declarations of array types  NOTE indexing
+# TODO convert INTEGERS code to ASSEMBLY
+# TODO translation grammar
 
 # TODO 1) INTEGERS # PROJETO
 # TODO 2) POINTERS OVER INTEGERS # FACILITA a componente do array
