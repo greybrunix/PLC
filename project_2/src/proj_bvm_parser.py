@@ -124,6 +124,7 @@ def p_factor(p):
                | NOT expression
                | SUB expression
                | call_function
+               | indarr
     '''
     pass
 def p_ad_op(p):
