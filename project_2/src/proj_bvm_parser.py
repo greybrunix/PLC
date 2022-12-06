@@ -182,6 +182,31 @@ def p_args(p):
     '''
     pass
 
+# Array em si
+def p_array(p):
+	'''
+		array: BLOCK_START elems BLOCK_END
+	'''
+	pass
+
+def p_elems(p):
+	'''
+		elems:
+			 | expr ARRCONT elems
+	'''
+	pass
+
+# Provavelmente vamos ter de acrescentar a seguinte atribuição de forma a ser possível 
+# atribuir arrays, não? (Está feito de forma a atribuição ser a[N] = [...])
+def p_atribution_3(p):
+	'atribution: indarr ATRIB array INSEND'
+	pass
+
+# Para reconhecer a[4] (Não sei se é só preciso fazer isto ou mais alguma coisa)
+# Talvez seja preciso acrescentar indarr aos fatores
+def p_indarr(p):
+	'p_indarr: ID ARRINDL INT ARRINDR'
+	pass
 def p_data_type(p):
     ''' 
         data_type : base_type
@@ -230,7 +255,7 @@ if __name__ == '__main__':
 # TODO convert INTEGERS code to ASSEMBLY
 # TODO translation grammar
 
-# TODO 1) INTEGERS # PROJETO
+# TODO 1) INTEGERS # NOTE PROJETO
 # TODO 2) POINTERS OVER INTEGERS # FACILITA a componente do array
 # TODO 3) CHARACTERS
 # TODO 4) POINTERS OVER CHARACTERS
