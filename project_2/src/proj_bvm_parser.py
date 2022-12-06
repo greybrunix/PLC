@@ -82,10 +82,10 @@ def p_atribution_2(p):
 def p_atribution_3(p):
     'atribution : indarr ATRIB array INSEND'
     pass
-def p_array(p):
+def p_array_1(p):
     'array : BLOCK_START BLOCK_END'
     pass
-def p_array(p):
+def p_array_2(p):
     'array : BLOCK_START arr_elem arr_elems BLOCK_END'
     pass
 
