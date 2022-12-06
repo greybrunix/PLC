@@ -80,28 +80,28 @@ def p_atribution_2(p):
     'atribution : ID ATRIB conditional_expression INSEND'
     pass
 def p_atribution_3(p):
-    'atribution: indarr ATRIB array INSEND'
+    'atribution : indarr ATRIB array INSEND'
     pass
 def p_array(p):
-    'array: BLOCK_START BLOCK_END'
+    'array : BLOCK_START BLOCK_END'
     pass
 def p_array(p):
-    'array: BLOCK_START arr_elem arr_elems BLOCK_END'
+    'array : BLOCK_START arr_elem arr_elems BLOCK_END'
     pass
 
 def p_arr_elems(p):
     '''
-         arr_elems:
+         arr_elems :
                   | ARRCONT arr_elem arr_elems
     '''
     pass
 def p_arr_elem(p):
     '''
-         arr_elem: expression
+         arr_elem : expression
     '''
     pass
 def p_indarr(p):
-    'p_indarr: ID ARRINDL INT ARRINDR'
+    'p_indarr : ID ARRINDL INT ARRINDR'
     pass
 def p_expression_1(p):
     'expression : term'
