@@ -57,10 +57,10 @@ def p_declaration_1(p):
     'declaration : data_type ID INSEND'
     pass
 def p_declaration_2(p):
-    'declaration : data_type atribution'
+    'declaration : data_type indarr INSEND'
     pass
 def p_declaration_3(p):
-    'declaration : data_type indarr INSEND'
+    'declaration : data_type atribution'
     pass
 def p_code_logic(p):
     '''
@@ -89,19 +89,16 @@ def p_array_2(p):
     'array : BLOCK_START arr_elem arr_elems BLOCK_END'
     pass
 
-def p_arr_elems(p):
-    '''
-         arr_elems :
-                  | ARRCONT arr_elem arr_elems
-    '''
-    pass
 def p_arr_elem(p):
     '''
          arr_elem : expression
     '''
     pass
-def p_indarr(p):
-    'indarr : ID ARRINDL INT ARRINDR'
+def p_arr_elems(p):
+    '''
+         arr_elems :
+                  | ARRCONT arr_elem arr_elems
+    '''
     pass
 def p_expression_1(p):
     'expression : term'
@@ -146,6 +143,9 @@ def p_mult_op(p):
     '''
     pass
 
+def p_indarr(p):
+    'indarr : ID ARRINDL INTEGER ARRINDR'
+    pass
 def p_conditionals(p):
     'conditionals : conditional code_logic'
     pass
