@@ -101,7 +101,7 @@ def p_arr_elem(p):
     '''
     pass
 def p_indarr(p):
-    'p_indarr : ID ARRINDL INT ARRINDR'
+    'indarr : ID ARRINDL INT ARRINDR'
     pass
 def p_expression_1(p):
     'expression : term'
