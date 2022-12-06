@@ -59,6 +59,9 @@ def p_declaration_1(p):
 def p_declaration_2(p):
     'declaration : data_type atribution'
     pass
+def p_declaration_3(p):
+    'declaration : data_type indarr INSEND'
+    pass
 def p_code_logic(p):
     '''
         code_logic :  
@@ -75,6 +78,30 @@ def p_atribution_1(p):
     pass
 def p_atribution_2(p):
     'atribution : ID ATRIB conditional_expression INSEND'
+    pass
+def p_atribution_3(p):
+    'atribution: indarr ATRIB array INSEND'
+    pass
+def p_array(p):
+    'array: BLOCK_START BLOCK_END'
+    pass
+def p_array(p):
+    'array: BLOCK_START arr_elem arr_elems BLOCK_END'
+    pass
+
+def p_arr_elems(p):
+    '''
+         arr_elems:
+                  | ARRCONT arr_elem arr_elems
+    '''
+    pass
+def p_arr_elem(p):
+    '''
+         arr_elem: expression
+    '''
+    pass
+def p_indarr(p):
+    'p_indarr: ID ARRINDL INT ARRINDR'
     pass
 def p_expression_1(p):
     'expression : term'
@@ -182,31 +209,6 @@ def p_args(p):
     '''
     pass
 
-# Array em si
-def p_array(p):
-	'''
-		array: BLOCK_START elems BLOCK_END
-	'''
-	pass
-
-def p_elems(p):
-	'''
-		elems:
-			 | expr ARRCONT elems
-	'''
-	pass
-
-# Provavelmente vamos ter de acrescentar a seguinte atribuição de forma a ser possível 
-# atribuir arrays, não? (Está feito de forma a atribuição ser a[N] = [...])
-def p_atribution_3(p):
-	'atribution: indarr ATRIB array INSEND'
-	pass
-
-# Para reconhecer a[4] (Não sei se é só preciso fazer isto ou mais alguma coisa)
-# Talvez seja preciso acrescentar indarr aos fatores
-def p_indarr(p):
-	'p_indarr: ID ARRINDL INT ARRINDR'
-	pass
 def p_data_type(p):
     ''' 
         data_type : base_type
