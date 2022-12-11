@@ -1,0 +1,95 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{xspace}
+\usepackage[portuguese,main=english]{babel}
+\usepackage{cite}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{color}
+\parindent=0pt
+\titleformat{\section}{\normalfont\Large\bfseries}{\S\thesection}{1em}{}
+\parskip=2pt
+\setlength{\oddsidemargin}{-1cm}
+\setlength{\textwidth}{18cm}
+\setlength{\headsep}{-1cm}
+\setlength{\textheight}{23cm}
+\lstset{
+	basicstyle=\small, %o tamanho das fontes que são usadas para o código
+	numbers=left, % onde colocar a numeração da linha
+	numberstyle=\tiny, %o tamanho das fontes que são usadas para a numeração da linha
+	numbersep=5pt, %distancia entre a numeração da linha e o codigo
+	breaklines=true, %define quebra automática de linha
+    frame=tB,  % caixa a volta do codigo
+	mathescape=true, %habilita o modo matemático
+	escapeinside={(*@}{@*)} % se escrever isto  aceita tudo o que esta dentro das marcas e nao altera
+}
+\lstdefinestyle{custompy}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=tB,
+  xleftmargin=\parindent,
+  language=Python,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  backgroundcolor=\color{white},
+  keywordstyle=\bfseries\color{red},
+  commentstyle=\itshape\color{blue},
+  identifierstyle=\color{black},
+  stringstyle=\color{green},
+}
+
+\title{Processamento de Linguagens e Compiladores (3º Ano LCC)\\ 
+      \textbf{Project 2} \\ Project Report
+      }
+\date{\today}
+\author{Bruno Dias da Gião\\ A96544 \and Maria Filipa Rodrigues \\ A97536}
+
+\begin{document}
+\maketitle
+
+\selectlanguage{portuguese}
+\begin{abstract}
+Lorem Ipsum
+\end{abstract}
+\selectlanguage{english}
+\begin{abstract}
+Lorem Ipsum
+\end{abstract}
+
+\tableofcontents
+
+\chapter{Report} \label{chap:report}
+\section{Introduction} \label{intro} 
+\subsection{The ``Not-Quite-C-Nor-B-But-More-Like-C'' language Compiler}
+\subsubsection{Introduction to the Report}  
+
+\subsubsection{Historical background of BCPL, B and C}
+
+\subsubsection{Historical background of Lexx, Yacc and PLY}
+\subsubsection{Importance of this project}
+
+
+\subsubsection{Background of the Project}
+\subsubsection{Expansions of the Project}
+\section{Methodology} \label{methodology}
+\subsection{Theoretical Background} \label{theory}
+\subsection{Practical component} \label{practice}
+\subsection{Testing the code}
+
+\section{Conclusion} \label{conclusion}
+
+\chapter{Appendix} \label{chap:code}
+\section{Codes}
+
+
+\bibliography{bib}{}
+\bibliographystyle{plain}
+\end{document}
+
