@@ -147,15 +147,13 @@ def p_term_1(p):
     'term : term mult_op factor'
     pass
 def p_factor(p):
-    '''
-        factor : INTEGER
-               | ID
-               | LPAREN expression RPAREN
-               | NOT expression
-               | SUB expression
-               | call_function
-               | indarr
-    '''
+    'factor : INTEGER'
+    'factor : ID'
+    'factor : LPAREN expression RPAREN'
+    'factor : NOT expression'
+    'factor : SUB expression'
+    'factor : call_function'
+    'factor : indarr'
     pass
 def p_ad_op_sum(p):
     'ad_op : SUM'
@@ -209,32 +207,38 @@ def p_cond_expr(p):
 def p_cond_expr_1(p):
     'conditional_expression : LPAREN conditional_expression bool_op conditional_expression RPAREN'
     pass
-def p_bool_op(p):
-    '''
-        bool_op : EQ
-                | DIF
-                | LEQ
-                | GEQ
-                | LESSER
-                | GREATER
-                | CONDAND
-                | CONDOR
-    '''
+def p_bool_op_eq(p):
+    'bool_op : EQ'
+    pass
+def p_bool_op_dif(p):
+    'bool_op : DIF'
+    pass
+def p_bool_op_leq(p):
+    'bool_op : LEQ'
+    pass
+def p_bool_op_geq(p):
+    'bool_op : GEQ'
+    pass
+def p_bool_op_les(p):
+    'bool_op : LESSER'
+    pass
+def p_bool_op_gre(p):
+    'bool_op : GREATER'
+    pass
+def p_bool_op_and(p):
+    'bool_op : CONDAND'
+    pass
+def p_bool_op_or(p):
+    'bool_op : CONDOR'
     pass
 def p_cond_code(p):
-    '''
-        cond_code : BLOCK_START code_logic BLOCK_END
-    '''
+    'cond_code : BLOCK_START code_logic BLOCK_END'
     pass
 def p_function_calls(p):
-    '''
-        function_calls : call_function code_logic
-    '''
+    'function_calls : call_function code_logic'
     pass
 def p_call_function(p):
-    '''
-        call_function : ID args_lst
-    '''
+    'call_function : ID args_lst'
     pass
 def p_args_lst(p):
     'args_lst : LPAREN RPAREN'
