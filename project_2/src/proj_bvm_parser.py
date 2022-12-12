@@ -1,7 +1,8 @@
 import ply.yacc as yacc
 import sys
-
+import re
 from proj_bvm_lexer import tokens
+
 
 def p_program(p):
     'program : functions'
@@ -17,28 +18,29 @@ def p_functions_2(p):
 
 def p_function(p):
     'function : function_header function_code_outline'
-    p[0] = p[1] + p[2]
+    p[0] = p[2] + p[3]
+
 def p_function_header(p):
     'function_header : data_type function_name argument_list_head'
-    p[0] = p[1] + p[2] + p[3]
-
+    functions.insert(('int',p[2]),p3])
+    p[0] = ''
 def p_argument_list_head_1(p):
     'argument_list_head : LPAREN RPAREN '
-    p[0] = p[1] + p[2]
+    p[0] = 'void'
 
 def p_argument_list_head_3(p):
     'argument_list_head : LPAREN arg_head args_head RPAREN'
-    pass
+    p[0] = p[2] + p[3]
 
 def p_arg_head_1(p):
-    'arg_head : data_type ID'
-    pass
+    'arg_head : data_type arg_name'
+    p[0] = p[1] + p[2]
 def p_args_head_1(p):
     'args_head :  '
-    pass
+    p[0] = ''
 def p_args_head_2(p):
     'args_head : ARRCONT arg_head args_head'
-    pass
+    p[0] = ', ' + p[2] + p[3]
 
 
 def p_function_code_outline(p):
@@ -100,11 +102,11 @@ def p_atribution_2(p):
     'atribution : var_name_atr ATRIB conditional_expression INSEND'
     p[0] = 'pushi ' + p[2]
 def p_atribution_3(p):
-    'atribution : indarr ATRIB array INSEND'
+    'atribution : indarr_atr ATRIB array INSEND'
     # Understand arrays
     p[0] = p[2]
 def p_atribution_4(p):
-    'atribution : indarr ATRIB expression INSEND'
+    'atribution : indarr_atr ATRIB expression INSEND'
     #check array
     p[0] = p[2]
 
@@ -118,7 +120,7 @@ def p_array_2(p):
 
 def p_arr_elem(p):
     'arr_elem : expression'
-    pass
+    p[0] = p[1]
 def p_arr_elems(p):
     'arr_elems :  '
     pass
@@ -126,10 +128,10 @@ def p_arr_elems_1(p):
     'arr_elems : ARRCONT arr_elem arr_elems'
     pass
 def p_indarr(p):
-    'indarr : ID ARRINDL INTEGER ARRINDR'
+    'indarr : var_name_atr ARRINDL INTEGER ARRINDR'
     pass
 def p_indarr_1(p):
-    'indarr : ID ARRINDL ID ARRINDR'
+    'indarr : var_name_atr ARRINDL ID ARRINDR'
     pass
 
 # Expression relative rules
@@ -148,11 +150,23 @@ def p_term_1(p):
     pass
 def p_factor(p):
     'factor : INTEGER'
+    pass
+def p_factor_id(p):
     'factor : ID'
+    pass
+def p_factor_prio(p):
     'factor : LPAREN expression RPAREN'
+    pass
+def p_factor_not(p):
     'factor : NOT expression'
+    pass
+def p_factor_sym(p):
     'factor : SUB expression'
+    pass
+def p_factor_func(p):
     'factor : call_function'
+    pass
+def p_factor_arr(p):
     'factor : indarr'
     pass
 def p_ad_op_sum(p):
@@ -238,7 +252,7 @@ def p_function_calls(p):
     'function_calls : call_function code_logic'
     pass
 def p_call_function(p):
-    'call_function : ID args_lst'
+    'call_function : function_name args_lst'
     pass
 def p_args_lst(p):
     'args_lst : LPAREN RPAREN'
@@ -272,19 +286,20 @@ def p_base_type(p):
 
 def p_function_name(p):
     'function_name : ID'
-    pass
+    p[0] = p[1]
 def p_var_name_dec(p):
     'var_name_dec : ID'
-    pass
+    p[0] = p[1]
 def p_var_name_atr(p):
     'var_name_atr : ID'
-    pass
+    # Verify if it's in var names (locally)
+    p[0] = p[1]
 def p_code_end(p):
     'code_end : RETURN INSEND'
-    pass
+    p[0] = 'return\nnop\n'
 def p_code_end_1(p):
     'code_end : RETURN expression INSEND'
-    p[0] = 'return\nnop\n'
+    p[0] = p[2] + 'return\nnop\n'
     #pass
     #TODO RETHINK THIS
 
@@ -293,17 +308,38 @@ def p_error(p):
     parser.success = False
     print('ERROR during parsing,\ntoken that caused error: ',p)
 
-
-if __name__ == '__main__':
+def main():
+    flag_err = False
     parser = yacc.yacc(debug=False,write_tables=False)
-    with open(sys.argv[1],'r') as f:
-        cont = f.read()
-    parser.success = True
-    parser.parse(cont)
-    if parser.success:
-        print("Success")
+    argc = len(sys.argv)
+    # flags = "-o"/"-r"
+    # argc size 2 to 4
+    # -r runs immediately
+    # -o compiles to a vm file with a different name at the users choice
+    # must be python name -> orfile.tnc -> -o newfile.vm -> -v
+    # or python name -> orfile.tnc -> -o  newfile.vm
+    # or python name -> orfile.tnc -> -v
+    # or python name -> orfile.tnc
+    if argc < 2 or argc > 4:
+        flag_err = True
+    if not flag_err:
+        file_name = re.match(r'(.*)\.tnc'), sys.argv[1])
+        if (file_name):
+            file_name = file_name.group(1)
+            with open(sys.argv[1],'r') as f:
+                cont = f.read()
+            parser.success = True
+            parser.parse(cont)
+            if parser.success:
+                print("Success")
 
-# NOTE Pointers recognized DONE
+    return flag_err;
+if __name__ == '__main__':
+    main()
+
+
+
+# NOTE Pointers recognized DONE DEPRECATED
 # NOTE recognize function calls DONE
 # NOTE recognize arrays DONE
 #   NOTE Declarations of array types  NOTE indexing
@@ -317,9 +353,12 @@ if __name__ == '__main__':
 # NOTE RECOGNITION IS 100% DONE
 # TODO ONLY TRANSLATION GRAMMAR REMAINS
 
+# TODO NEEDED data structures to hold each functions declared variables
+# TODO global namespace (function names)
 
 # TODO 1) INTEGERS # NOTE PROJETO
-# TODO 2) POINTERS OVER INTEGERS # FACILITARIA a componente do array
+# NOTE everything past this is optional and for further work
+# TODO 2) POINTERS OVER INTEGERS # FACILITARIA a componente do array # Not really
 # TODO 3) CHARACTERS
 # TODO 4) POINTERS OVER CHARACTERS
 # TODO 5) FLOATS
