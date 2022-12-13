@@ -1,0 +1,22 @@
+INT FACTORIAL(INT num)
+{
+    INT res = 1;
+    WHILE (num >= 1)
+    {
+        res = num * res;
+        num = num-1; /* test string */
+    }
+    RETURN res;
+}
+
+INT main()
+{
+    INT num;
+    INT res;
+    num = 4;
+    res = FACTORIAL()
+
+    WRITES("Computed ");
+    WRITEI(num);
+    RETURN 0;
+}

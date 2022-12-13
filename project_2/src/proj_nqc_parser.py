@@ -3,10 +3,19 @@ import sys
 import re
 from proj_bvm_lexer import tokens
 
+# Keep track of function names, types and arguments
+func_names = {('MAIN','INT'): 'void', ('READ','CHAR*'): 'void',
+        ('WRITES','INT'):'CHAR* str', ('WRITEI','INT'): 'INT int'}
 
+namespace = {'MAIN': []} # keep track of local variables
+curr_function = 'MAIN'
+
+############## GRAMMAR #####################
+# Generates the global space of the assembly code
 def p_program(p):
     'program : functions'
-    p[0] = 'global: nop\nstart\nnop\npusha main\ncall\nnop\nnop\nstop\n\n'+ p[1]
+    p[0] = 'global: nop\nstart\nnop'
+           +'\npusha MAIN\ncall\nnop\nnop\nstop\n\n'+p[1]
 
 def p_functions_1(p):
     'functions :  '
@@ -18,21 +27,22 @@ def p_functions_2(p):
 
 def p_function(p):
     'function : function_header function_code_outline'
-    p[0] = p[2] + p[3]
+    p[0] = p[1] + p[2]
 
 def p_function_header(p):
     'function_header : data_type function_name argument_list_head'
-    functions.insert(('int',p[2]),p3])
-    p[0] = ''
+    func_names[(p[1],p[2])] = p[3]
+    names_space[p[2]] = []
+    p[0] = p[2] + ':\n'
+
 def p_argument_list_head_1(p):
     'argument_list_head : LPAREN RPAREN '
     p[0] = 'void'
-
-def p_argument_list_head_3(p):
+def p_argument_list_head_2(p):
     'argument_list_head : LPAREN arg_head args_head RPAREN'
     p[0] = p[2] + p[3]
 
-def p_arg_head_1(p):
+def p_arg_head(p):
     'arg_head : data_type arg_name'
     p[0] = p[1] + p[2]
 def p_args_head_1(p):
@@ -71,12 +81,7 @@ def p_declaration_2(p):
     'declaration : data_type indarr INSEND'
     #TODO check type
     p[0] = p[1] + p[2]
-def p_declaration_3(p):
-    'declaration : data_type atribution'
-    #TODO check type
-    p[0] = p[1] + p[2] + '\n'
 
-# Code logic refers everything after declarations and before end of function
 def p_code_logic(p):
     'code_logic :  '
     p[0] = ''
@@ -110,7 +115,6 @@ def p_atribution_4(p):
     #check array
     p[0] = p[2]
 
-# Rules relative to arrays
 def p_array_1(p):
     'array : BLOCK_START BLOCK_END'
     p[0] = ''
@@ -123,10 +127,11 @@ def p_arr_elem(p):
     p[0] = p[1]
 def p_arr_elems(p):
     'arr_elems :  '
-    pass
+    P[0] = ''
 def p_arr_elems_1(p):
     'arr_elems : ARRCONT arr_elem arr_elems'
     pass
+
 def p_indarr(p):
     'indarr : var_name_atr ARRINDL INTEGER ARRINDR'
     pass
@@ -134,26 +139,28 @@ def p_indarr_1(p):
     'indarr : var_name_atr ARRINDL ID ARRINDR'
     pass
 
-# Expression relative rules
 def p_expression_1(p):
     'expression : term'
-    pass
+    p[0] = p[1]
 def p_expression_2(p):
     'expression : expression ad_op term'
-    pass
+    p[0] = p[1] + p[2] + p[3]
 
 def p_term(p):
     'term : factor'
-    pass
+    p[0] = p[1]
 def p_term_1(p):
     'term : term mult_op factor'
-    pass
+    p[0] = p[1] + p[2] + p[3]
 def p_factor(p):
     'factor : INTEGER'
-    pass
+    p[0] = p[1]
 def p_factor_id(p):
     'factor : ID'
-    pass
+    if (p[1] in namespace[curr_function]):
+        p[0] = p[1]
+    else:
+        parser.success = False
 def p_factor_prio(p):
     'factor : LPAREN expression RPAREN'
     pass
@@ -182,7 +189,6 @@ def p_ad_op_xor(p):
     'ad_op : XOR'
     pass
 
-# Multiplicative operators
 def p_mult_op_1(p):
     'mult_op : MULT'
     pass
@@ -312,14 +318,6 @@ def main():
     flag_err = False
     parser = yacc.yacc(debug=False,write_tables=False)
     argc = len(sys.argv)
-    # flags = "-o"/"-r"
-    # argc size 2 to 4
-    # -r runs immediately
-    # -o compiles to a vm file with a different name at the users choice
-    # must be python name -> orfile.tnc -> -o newfile.vm -> -v
-    # or python name -> orfile.tnc -> -o  newfile.vm
-    # or python name -> orfile.tnc -> -v
-    # or python name -> orfile.tnc
     if argc < 2 or argc > 4:
         flag_err = True
     if not flag_err:
@@ -338,28 +336,71 @@ if __name__ == '__main__':
     main()
 
 
-
+######################### GLOSSARY ##########################
+# Line 7-10
+# NOTE Namespace shall contain all names and make sure no declaration
+# is repeated, since global variables are not supported, this shall
+# be separated by the variables in each function
+# NOTE Checking for ambiguous definitions can be done via iterating
+# the namespace in the function and iterating the reserved words of the
+# lexer
+# NOTE this segment of code also hints at how functions should be
+# kept track of in memory, being marked as 'void' if it has no arguments
+# and with what it found in the source code for non void args
+#
+# Line 13-16
+# This rule defines a program as being a series of functions, however,
+# we also use this moment to define the global space of the program,
+# i.e. where main is called from. NOTE nops are used in hopes of correcting
+# some possible performance issues and exposed pipeline issues
+# The main interest of this segment of global space might be for
+# declaring global variables, but these are (rightfuly) frowned upon
+# and needlessly crowd a program's namespace, because our language is
+# focused on good programming practices, it was opted out, thus it's
+# main purpose is NOTE calling main and ending the program
+#
+#
+####################### PROGRESS ################################
+#
 # NOTE Pointers recognized DONE DEPRECATED
 # NOTE recognize function calls DONE
 # NOTE recognize arrays DONE
-#   NOTE Declarations of array types  NOTE indexing
+#### NOTE Declarations of array types  NOTE indexing
 # TODO convert INTEGERS code to ASSEMBLY
-#   TODO translation grammar
+#### TODO translation grammar
 # NOTE replaced the grammar for arrays with a more `accurate?' recursive
 # form
 # NOTE Added declarations for arrays and added arrays
 # to expression factors
-
+#
 # NOTE RECOGNITION IS 100% DONE
 # TODO ONLY TRANSLATION GRAMMAR REMAINS
-
+#### Started progress on this
+#### Trivial work need only some thought into some aspects of
+#### the translation process
+#
 # TODO NEEDED data structures to hold each functions declared variables
 # TODO global namespace (function names)
-
+#
+######################## COMPILER FLAGS AND ARGS ##################
+# flags = "-o"/"-r"
+# argc size 2 to 4
+# -r runs immediately
+# -o compiles to a vm file with a different name at the users choice
+# must be
+# python name    -> orfile.nqc -> -o newfile.vm -> -v
+# or python name -> orfile.nqc -> -o newfile.vm
+# or python name -> orfile.nqc -> -v
+# or python name -> orfile.nqc
+#
+####################### REQUIREMENTS ##############################
 # TODO 1) INTEGERS # NOTE PROJETO
+#
 # NOTE everything past this is optional and for further work
-# TODO 2) POINTERS OVER INTEGERS # FACILITARIA a componente do array # Not really
+#### AKA nitpicks I'd like
+# TODO 2) POINTERS OVER INTEGERS # MIGHT ease array # Not really
 # TODO 3) CHARACTERS
 # TODO 4) POINTERS OVER CHARACTERS
 # TODO 5) FLOATS
 # TODO 6) POINTERS OVER FLOATS
+

@@ -3,10 +3,10 @@ import sys
 
 
 reserved = {
-        'IF'    : 'IF','ELSE'  : 'ELSE',
-        'WHILE' : 'WHILE','INT'   : 'INT',
-        'CHAR'  : 'CHAR','FLOAT' : 'FLOAT',
-        'RETURN': 'RETURN'
+        'IF'     : 'IF','ELSE'    : 'ELSE',
+        'WHILE'  : 'WHILE','INT'  : 'INT',
+        'CHAR*'  : 'CHAR*',#'FLOAT' : 'FLOAT',
+        'RETURN' : 'RETURN','INT*': 'INT*' # Arrays of Arrays
 }
 
 # List of Tokens
@@ -16,7 +16,7 @@ tokens = [
         'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
         'CONDAND','CONDOR','ATRIB','INSEND','ARRCONT',
         'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
-        'BLOCK_END'
+        'BLOCK_END','STRDELI'
 ] + list(reserved.values())
 
 ########### INTEGER ARITHMETIC ############
@@ -37,6 +37,7 @@ t_ATRIB     = r'\=';t_INSEND    = r'\x3B' # ;
 t_ARRCONT   = r'\x2C' # ,
 t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
 t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store
+t_STRDELI   = r'\"'   # Delimiters for strings
 # a[0] = 1;
 # a[1] = 2;
 # b = a[0];
