@@ -1,22 +1,31 @@
-INT FACTORIAL(INT num)
+INT fact(INT num)
 {
-    INT res = 1;
-    WHILE (num >= 1)
+    INT res; /* pushl 0 */
+
+    res = 1; /* pushi 1 \n storel 0 */
+    WHILE (num > 0) /* L1: \n pushl -1 \n jz L2 */
     {
-        res = num * res;
-        num = num-1; /* test string */
-    }
-    RETURN res;
+        res = num * res; /* pushl 1 \n pushl -1 \n mul \n storel 1*/
+        num = num-1; /* pushl -1 \n pushi 1 \n sub*/
+    } /* pushl -1 \n not \n jz L1 \n nop \n L2:*/
+
+    RETURN res; /* return \n nop */
 }
 
-INT main()
+INT MAIN()
 {
-    INT num;
-    INT res;
-    num = 4;
-    res = FACTORIAL()
+    INT flag_err; /* pushi 0 */
+    INT num; /* pushi 1 */
+    INT res; /* pushi 2 */
 
-    WRITES("Computed ");
-    WRITEI(num);
-    RETURN 0;
+    num = 4; /* pushi 4 \n storel 1 */
+    flag_err = 0; /* pushi 0 \n storel 0 */
+    res = fact(num); /* pushl 1 \n pusha fact \n call \n nop \n
+                        storel 2 \n pop 1*/
+    WRITES("Computed "); /* pushs "Computed " \n writes */
+    WRITEI(res); /* pushl 1 \n writei*/
+    WRITES("\n"); /* pushs "\n"\nwrites*/
+
+    RETURN 0; /* pop 2 \n return */
+    /*RETURN flag_err; pop 1 \n swap \n pop 1 \n return \n nop */
 }

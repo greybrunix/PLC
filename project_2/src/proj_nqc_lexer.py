@@ -6,7 +6,7 @@ reserved = {
         'IF'     : 'IF','ELSE'    : 'ELSE',
         'WHILE'  : 'WHILE','INT'  : 'INT',
         'CHAR*'  : 'CHAR*',#'FLOAT' : 'FLOAT',
-        'RETURN' : 'RETURN','INT*': 'INT*' # Arrays of Arrays
+        'RETURN' : 'RETURN'
 }
 
 # List of Tokens
