@@ -3,16 +3,17 @@ import sys
 
 
 reserved = {
-        'IF'     : 'IF','ELSE'    : 'ELSE',
-        'WHILE'  : 'WHILE','INT'  : 'INT',
-        'CHAR*'  : 'CHAR*',#'FLOAT' : 'FLOAT',
-        'RETURN' : 'RETURN'
+        'IF'     : 'IF','ELSE'      : 'ELSE',
+        'WHILE'  : 'WHILE','INT'    : 'INT',
+        r'CHAR\*': 'STR',#'FLOAT'   : 'FLOAT',
+        'RETURN' : 'RETURN','UNTIL' : 'UNTIL',
+        'DO'     : 'DO'
 }
 
 # List of Tokens
 tokens = [
         'INTEGER','SUM','MULT','DIV','MODULO','SUB',
-        'ID','XOR','AND','OR','SHIFTLEFT','SHIFTRIGHT',
+        'ID',#'XOR','AND','OR','SHIFTLEFT','SHIFTRIGHT',
         'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
         'CONDAND','CONDOR','ATRIB','INSEND','ARRCONT',
         'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
@@ -24,16 +25,17 @@ t_SUM   = r'\+';t_MULT  = r'\*'
 t_DIV   = r'\/';t_MODULO = r'\%'
 t_SUB   = r'\-'
 ########## BITWISE ##################
-t_XOR = r'\^';t_AND = r'\&'
-t_OR  = r'\|';t_NOT = r'\!'
-t_SHIFTLEFT = r'\<\<';t_SHIFTRIGHT = r'\>\>'
+#t_XOR = r'\^';t_AND = r'\&'
+#t_OR  = r'\|'
+t_NOT = r'\!'
+#t_SHIFTLEFT = r'\<\<';t_SHIFTRIGHT = r'\>\>'
 ########### BOOLEAN #################
 t_GEQ = r'\>\=';t_LEQ = r'\<\='
 t_DIF = r'\!\=';t_EQ = r'\=\='
 t_LESSER  = r'\<';t_GREATER = r'\>'
 t_CONDAND = r'\&\&';t_CONDOR = r'\|\|'
 ######### SYNTAX RELATIVE SYMBOLS ##########
-t_ATRIB     = r'\=';t_INSEND    = r'\x3B' # ;
+t_ATRIB     = r'\:\=';t_INSEND    = r'\x3B' # ;
 t_ARRCONT   = r'\x2C' # ,
 t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
 t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store

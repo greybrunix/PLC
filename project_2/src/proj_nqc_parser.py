@@ -9,9 +9,9 @@ from proj_nqc_lexer import tokens
 # Generates the calling function of the main function
 def p_program(p):
     'program : functions'
-    p[0] = 'global: nop\n\tstart\n\tnop\n\tpushi 0'
+    p[0] = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
     p[0] += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
-    p[0] += '\tjz L0\n\tstop\nL0:\n\terr "terminated with code 1"'+p[1]
+    p[0] += '\tjz L0\n\tnop\n\tstop\nL0:\n\terr "terminated with code 1"'+p[1]
     print(p[0])
 
 def p_functions_1(p):
@@ -51,7 +51,7 @@ def p_function_header(p):
         except AttributeError:
             parser.namespace[name] = {'class':'funct',
                               'arguments':[],'return':'p[1]'}
-    p[0] = p[2] + ':\n'
+    p[0] = p[2] + ':\n\tnop\n'
 
 def p_argument_list_head_1(p):
     'argument_list_head : LPAREN RPAREN '
@@ -93,15 +93,18 @@ def p_declarations_2(p):
 # Each declaration
 def p_declaration_1(p):
     'declaration : data_type var_name_dec INSEND'
-    index = len(namespace[curr_function]) #TODO
+    index = len(parser.localvars) #TODO
     p[0] = f'pushi 0\n'
-def p_declaration_2(p):
-    'declaration : data_type indarr_dec INSEND'
-    p[0] = f'\tpushfp\n{p[2]}\n'
 
-def p_indarr_dec(p):
-    'indarr_dec : var_name_dec ARRINDL INT ARRINDR'
-    #TODO
+def p_declaration_2(p):
+    'declaration : data_type ID ARRINDL INTEGER ARRINDR INSEND'
+    if (p[2] in parser.namespace):
+        print(f"ERROR: Variable already defined (ln {p.lineno})")
+    ind = len(parser.localvars) - \
+            len(parser.namespace[current_function]['arguments'])
+    p[0] = f'\tpushfp\npushi {ind}\n\tpadd\n\tpushn {p[4]}\n'
+
+
 def p_code_logic(p):
     'code_logic :  '
     p[0] = ''
@@ -124,35 +127,17 @@ def p_atribution_1(p):
     #TODO check if var_name_atr is defined
     if p[1] not in parser.namespace:
         print(f"ERROR: First use of Identifier in line {p.lineno}")
-    p[0] = f'\tpushi {p[2]}\n\tstorel {p[1]}\n'
+    p[0] = f'\tpushi {p[3]}\n\tstorel {p[1]}\n'
 
 
 
 def p_atribution_2(p):
-    'atribution : var_name_atr ATRIB conditional_expression INSEND'
-    p[0] = f'{p[2]}\nstorel ' #TODO
+    'atribution : var_name_atr ATRIB cond_expression INSEND'
+    p[0] = f'{p[3]}\nstorel ' #TODO
 def p_atribution_3(p):
-    'atribution : indarr_atr ATRIB array INSEND'
+    'atribution : indarr ATRIB expression INSEND'
     # Understand arrays
-    p[0] = p[2]
-
-def p_array_1(p):
-    'array : BLOCK_START BLOCK_END'
-    p[0] = ''
-def p_array_2(p):
-    'array : BLOCK_START arr_elem arr_elems BLOCK_END '
-    p[0] = p[2] + p[3]
-
-def p_arr_elem(p):
-    'arr_elem : expression'
-    p[0] = p[1] #TODO
-def p_arr_elems(p):
-    'arr_elems :  '
-    P[0] = ''
-def p_arr_elems_1(p):
-    'arr_elems : ARRCONT arr_elem arr_elems'
-    pass
-
+    #p[0] = p[2]
 
 def p_indarr_1(p):
     'indarr : var_name_atr ARRINDL expression ARRINDR' # Risks SEGFAULT But
@@ -168,14 +153,7 @@ def p_indarr_1(p):
     if p[3] not in parser.namespace:
         print(f"ERROR: {p[3]} in line {p.lineno} not declared")
         parser.sucess = False
-    else:
-        if (parser.namespace[p[3]]['class'] != 'var'
-          or parser.namespace[p[3]]['type'] != 'int'
-          or parser.namespace[p[3]]['dim'] != 0):
-            print(f"ERROR: {p[3]} in line {p.lineno} is not"
-                    "a int type variable")
-            parser.success = False
-    p[0] = f'\tpushl {p[1]}\n\tpushl {p[1]}\n\tloadn\n'
+    p[0] = f'\tpushl {p[1]}\n\t{p[3]}\n\tloadn\n'
 def p_expression_1(p):
     'expression : term'
     p[0] = p[1]
@@ -263,6 +241,20 @@ def p_conditional_do_while(p):
     parser.labelcounter += 1
     p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
 
+def p_conditional_until(p):
+    'conditional : UNTIL cond_expression cond_code'
+    loop_label = 'L' + str(parser.labelcounter)
+    parser.labelcounter += 1
+    end_label = 'L' + str(parser.labelcounter)
+    parser.labelcounter += 1
+    p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}{end_label}:\n'
+
+def p_conditional_do_until(p):
+    'conditional : DO cond_code UNTIL cond_expression'
+    loop_label = 'L' + str(parser.labelcounter)
+    parser.labelcounter += 1
+    p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
+
 def p_conditional_if(p):
     'conditional : IF cond_expression cond_code'
     cond_label = 'L' + str(parser.labelcounter)
@@ -271,7 +263,12 @@ def p_conditional_if(p):
 
 def p_conditional_if_else(p):
     'conditional : IF cond_expression cond_code ELSE cond_code'
-    pass
+    else_label = 'L' + str(parser.labelcounter)
+    parser.labelcounter += 1
+    end_label = 'L' + str(parser.labelcounter)
+    parser.labelcounter += 1
+    p[0] = f'{p[2]}\tjz {else_label}\n{p[3]}\tjump {end_label}\n'
+    p[0]+= f'{else_label}:\n{p[5]}\t{end_label}:\n'
 def p_cond_expr(p):
     'cond_expression : LPAREN expression RPAREN'
     pass
@@ -280,10 +277,10 @@ def p_cond_expr_1(p):
     pass
 def p_bool_op_eq(p):
     'bool_op : EQ'
-    #eq
+    p[0] = f'\tdup 2\n\tinfeq\n\tsupeq\n\tmul\n'
 def p_bool_op_dif(p):
     'bool_op : DIF'
-    #not
+    p[0] = f'\tdup 2\n\tinf\n\tsup\n\tadd\n'
 def p_bool_op_leq(p):
     'bool_op : LEQ'
     p[0] = '\tinfeq\n'
@@ -356,13 +353,13 @@ def p_code_end_1(p):
     #pass
     #TODO RETHINK THIS
     #TODO IF EXPRESSION IS A VAR IT MUST BE index 0
- 
+
 
 def p_error(p):
     parser.success = False
     print('ERROR during parsing,\ntoken that caused error: ',p)
 
-parser = yacc.yacc(debug=False,write_tables=False)
+parser = yacc.yacc()
 
 
 parser.namespace = {
@@ -445,12 +442,15 @@ if __name__ == '__main__':
 #
 # dec n pode ter atribuicao
 # atribuicao do array tem de ser sequencial
-##### as in{12312391283,12389u1283,129831298}
+##### as in{12312391283,12389u1283,129831298} # IGNORE THIS
+# ATRIBUICAO TEM DE SER POR INDEXACAO INDIVIDUAL
 ##### indexar
 # ARRAY BIDIMENSIONAL pode ser nome[dim1,dim2];
 # nome[12][23]
 # TODO whelp need to check all reserved words all local words
 #### and check for arguments
+#
+# CHECK FOR ERRORS
 ######################## COMPILER FLAGS AND ARGS ##################
 # flags = "-o"/"-r"
 # argc size 2 to 4
