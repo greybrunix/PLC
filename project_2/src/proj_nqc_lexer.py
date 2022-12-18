@@ -5,9 +5,9 @@ import sys
 reserved = {
         'IF'     : 'IF','ELSE'      : 'ELSE',
         'WHILE'  : 'WHILE','INT'    : 'INT',
-        r'CHAR\*': 'STR',#'FLOAT'   : 'FLOAT',
+        'STR'    : 'STR',#'FLOAT'   : 'FLOAT',
         'RETURN' : 'RETURN','UNTIL' : 'UNTIL',
-        'DO'     : 'DO'
+        'DO'     : 'DO', 'VOID'     : 'VOID'
 }
 
 # List of Tokens
@@ -17,7 +17,7 @@ tokens = [
         'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
         'CONDAND','CONDOR','ATRIB','INSEND','ARRCONT',
         'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
-        'BLOCK_END','STRDELI'
+        'BLOCK_END','STRDELI','ADDR'
 ] + list(reserved.values())
 
 ########### INTEGER ARITHMETIC ############
@@ -27,19 +27,20 @@ t_SUB   = r'\-'
 ########## BITWISE ##################
 #t_XOR = r'\^';t_AND = r'\&'
 #t_OR  = r'\|'
-t_NOT = r'\!'
 #t_SHIFTLEFT = r'\<\<';t_SHIFTRIGHT = r'\>\>'
 ########### BOOLEAN #################
 t_GEQ = r'\>\=';t_LEQ = r'\<\='
 t_DIF = r'\!\=';t_EQ = r'\=\='
 t_LESSER  = r'\<';t_GREATER = r'\>'
 t_CONDAND = r'\&\&';t_CONDOR = r'\|\|'
+t_NOT = r'\!'
 ######### SYNTAX RELATIVE SYMBOLS ##########
 t_ATRIB     = r'\:\=';t_INSEND    = r'\x3B' # ;
 t_ARRCONT   = r'\x2C' # ,
 t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
 t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store
 t_STRDELI   = r'\"'   # Delimiters for strings
+t_ADDR      = r'\@'
 # a[0] = 1;
 # a[1] = 2;
 # b = a[0];
