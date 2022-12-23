@@ -43,6 +43,9 @@ def p_function(p):
 def p_function_header(p):
     'function_header : func_type ID argument_list_head'
     name = p[2]
+    parser.currentfunc = name
+    parser.argnum = 0
+    parser.namespace[name] = {}
     args = p[3]
     r_type = p[1]
     if (name == 'MAIN'):
@@ -64,7 +67,7 @@ def p_function_header(p):
                 parser.namespace[name] = {'class':'funct',
                                   'arguments':[],'return':'p[1]'}
     if parser.success:
-        parser.currentfunc = name;
+        parser.varnum = 0
         p[0] = p[2] + ':\n\tnop\n'
 
 def p_argument_list_head_1(p):
@@ -78,8 +81,22 @@ def p_argument_list_head_2(p):
 
 def p_arg_head(p):
     'arg_head : data_type ID'
+    name = p[2]
+    data = p[1]
+    if name in parser.namespace:
+        if parser.namespace['name']['class'] != 'var':
+            parser.success = False
+            # TODO check this other args
     if parser.success:
-        p[0] = p[1] + p[2]
+        parser.argnum -= 1
+        parser.namespace[name] = {
+                'class'  : 'var'
+                'address': parser.argnum
+                'type'   : data
+                'dim'    : 0
+                'scope'  : parser.currentfunc
+                }
+        p[0] = data + name
 def p_args_head_1(p):
     'args_head :  '
     if parser.success:
@@ -117,20 +134,53 @@ def p_declarations_2(p):
 # Each declaration
 def p_declaration_1(p):
     'declaration : data_type ID INSEND'
-    if (p[2] in parser.namespace):
-        print(f"ERROR(ln {p.lineno}): Name already in use!")
+    name = p[2];
+    data = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] == parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            parser.success = False
     if parser.success:
         # TODO add the new system for namespace
-        p[0] = f'pushi 0\n'
+        ind = parser.varnum
+        parser.varnum += 1
+        parser.namespace[name] = {
+                'class'  : 'var',
+                'address': ind,
+                'type'   : data,
+                'dim'    : 0,
+                'scope'  : parser.currentfunc
+        }
+        p[0] = f'\tpushi 0\n'
 
 def p_declaration_2(p):
-    'declaration : INT ID ARRINDL INTEGER ARRINDR INSEND'
-    if (p[2] in parser.namespace):
-        print(f"ERROR(ln {p.lineno}): Name already in use!")
-        parser.success = False
+    'declaration : INT ID ARRINDL val_arr_ind ARRINDR INSEND'
+    name = p[2];
+    data = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] == parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            parser.success = False
     if parser.success:
         # TODO add the new system for namespace
-        p[0] = f'\tpushfp\npushi {ind}\n\tpadd\n\tpushn {p[4]}\n'
+        ind = parser.varnum
+        parser.varnum += 1
+        parser.namespace[name] = {
+                'class' : 'var',
+                'address': ind,
+                'type'   : data,
+                'dim'    : 1,
+                'scope'  : parser.currentfunc
+        }
+        p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n\n'
 
 
 def p_code_logic(p):
@@ -154,27 +204,46 @@ def p_code_logic_func(p):
 def p_atributions(p):
     'atributions : atribution code_logic'
     p[0] = p[1] + '\n' + p[2]
-def p_atribution_1(p):
+
+def p_atribution_1(p): # EXPRESSION ATRIBUTION
     'atribution : ID ATRIB expression INSEND'
-    #TODO check if var_name_atr is defined
-    if p[1] not in parser.namespace:
-        print(f"ERROR(ln {p.lineno}): Attribution without declaration.")
-        parser.success = False
+    name = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] == parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            parser.success = False
     if parser.success:
-        p[0] = f'\tpushi {p[3]}\n\tstorel {p[1]}\n'
+        address = parser.namespace[name]['address']
+        p[0] = f'{p[3]}\n\tstorel {address}\n'
 
 
 
-def p_atribution_2(p):
+def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
     'atribution : ID ATRIB cond_expression INSEND'
-    p[0] = f'{p[3]}\nstorel {index}' #TODO
+    name = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] == parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            parser.success = False
+    if parser.success:
+        address = parser.namespace[name]['address']
+        p[0] = f'{p[3]}\n\tstorel {address}\n'
+
 def p_atribution_3(p):
     'atribution : indarr ATRIB expression INSEND'
     # Understand arrays
     #p[0] = p[2]
 
 def p_indarr_1(p):
-    'indarr : ID ARRINDL expression ARRINDR' # Risks SEGFAULT But
+    'indarr : ID ARRINDL expression ARRINDR'      # Risks SEGFAULT But
     if p[1] not in parser.namespace:              # it is User responsability
         print(f"ERROR(ln {p.lineno}): Attribution without declaration.")
         parser.success = False
@@ -382,6 +451,24 @@ def p_pointer_rec(p):
     'pointer : MULT pointer'
     p[0] = p[1] + p[2]
 
+def p_valid_array_ind_int(p):
+    'valid_array_ind : INTEGER'
+    p[0] = f'pushi {p[1]}'
+def p_valid_array_ind_var(p):
+    'valid_array_ind : ID'
+    name = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] == parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            parser.success = False
+    if parser.success:
+        ind = parser.namespace[name]['address']
+        p[0] = f'pushl {ind}'
+
 def p_code_end_v(p):
     'code_end : RETURN INSEND' # Needs to check if curr_func is void
     if parser.namespace[currentfunc]['return'] == 'void':
@@ -414,14 +501,16 @@ def main():
        #     'return':'VOID' # Contains the type to be returned
        #     # IF VOID THE RETURN MUST BE 'RETURN;'
        # }, # Exemplify functions
+
        # '__VAR_NAME_NO_ONE_CAN_USE__':{
        #     'class':'var', # self explanatory
        #     'address':'0', # the address is the offset to %EBP
        #     'type':'__TYPE_NO_ONE_WILL_EVER_USE__', # self explanatory
        #     'dim': '0', # 0 int, 1 array, 2 bidimarray
-       #     'dimmax':'0,0', # might be removed 
+       #     'dimmax':'0,0', # might be removed
        #     'scope':'__FUNCTION_NAME_NO_ONE_WILL_EVER_USE__'
        #     }, # this serves only to exemplify declared variables
+
        # '__TYPE_NO_ONE_WILL_EVER_USE__':{
        #     # data and reserved only have one field as they don't require
        #     # any other information, maybe data would require words
@@ -429,6 +518,7 @@ def main():
        #     'class':'data'
        #     #'class':'reserved
        # }, # Exemplify Types and Reserved words
+
         'READ' : {
             'class': 'funct',
             'arguments':[],
@@ -455,6 +545,8 @@ def main():
     }
     parser.labelcounter = 1 # main calling function has a label
     parser.currentfunc  = 'MAIN'
+    parser.varnum       = 0
+    parser.argnum       = 0
     parser.result       = ''
     parser.success      = True
     flag_err            = False
