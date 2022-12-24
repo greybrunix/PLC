@@ -1,31 +1,38 @@
-INT fact(INT num)
-{
-    INT res; /* pushl 0 */
+BEGIN INT MAIN( )
+	INT flag_err;
+	INT num;
 
-    res = 1; /* pushi 1 \n storel 0 */
-    WHILE (num > 0) /* L1: \n pushl -1 \n jz L2 */
-    {
-        res = num * res; /* pushl 1 \n pushl -1 \n mul \n storel 1*/
-        num = num-1; /* pushl -1 \n pushi 1 \n sub*/
-    } /* pushl -1 \n not \n jz L1 \n nop \n L2:*/
+	flag_err := 0;
+	num := 5;
 
-    RETURN res; /* return \n nop */
-}
+	num := factorial( num );
 
-INT MAIN()
-{
-    INT flag_err; /* pushi 0 */
-    INT num; /* pushi 1 */
-    INT res; /* pushi 2 */
+	writei( num );
+	writes( "" );
 
-    num = 4; /* pushi 4 \n storel 1 */
-    flag_err = 0; /* pushi 0 \n storel 0 */
-    res = fact(num); /* pushl 1 \n pusha fact \n call \n nop \n
-                        storel 2 \n pop 1*/
-    WRITES("Computed "); /* pushs "Computed " \n writes */
-    WRITEI(res); /* pushl 1 \n writei*/
-    WRITES("\n"); /* pushs "\n"\nwrites*/
+	MAIN := flag_err;
+END
 
-    RETURN 0; /* pop 2 \n return */
-    /*RETURN flag_err; pop 1 \n swap \n pop 1 \n return \n nop */
-}
+BEGIN INT factorial( INT num )
+	BEGIN IF ( num <= 1 )
+		factorial := 1;
+	END
+	BEGIN ELSE
+		factorial := num *
+			factorial( (num - 1) );
+	END
+END
+
+/*
+BEGIN INT factorial( INT num )
+	int res;
+	BEGIN IF ( num <= 1 )
+		res := 1;
+	END
+	BEGIN ELSE
+		res := num *
+			factorial( (num -1) );
+	END
+	RETURN res;
+END
+*/

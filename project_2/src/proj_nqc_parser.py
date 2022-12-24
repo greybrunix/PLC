@@ -1,8 +1,10 @@
-import ply.yacc as yacc
+"""
+    PROJECT
+"""
 import sys
-import subprocess
 import re
-import proj_nqc_lexer as lx
+import subprocess
+from ply import yacc
 from proj_nqc_lexer import tokens
 
 
@@ -15,39 +17,38 @@ from proj_nqc_lexer import tokens
 # The axiom 'program' generates the function that calls main
 def p_program(p):
     'program : functions'
-    p[0] = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
-    p[0] += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
-    p[0] += '\tjz L0\n\tnop\n\tstop\nL0:\n\tpushs "Exited with code "'\
-            +'\n\twrites\n\twritei\n\t\pushs "\\n"\n\twrites\n\tstop\n'+p[1]
+    p[0] = p[1]
     if parser.success:
-        parser.result += p[0]
+        parser.result = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
+        parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
+        parser.result += '\tjz L0\n\tnop\n\tstop\nL0:\n\tpushs "Exited with code "'
+        parser.result += '\n\twrites\n\twritei\n\t\pushs "\\n"\n\twrites\n\tstop\n'+p[0]
 
 def p_functions_1(p):
     'functions :  '
     if 'MAIN' not in parser.namespace.keys():
         print(f"ERROR: Lacking a MAIN function!")
         parser.success = False
-    if parser.result:
+    if parser.success:
         p[0] = '\n'
 
 def p_functions_2(p):
     'functions : function functions'
-    if parser.result:
+    if parser.success:
         p[0] = p[1] + p[2]
 
 def p_function(p):
     'function : function_header function_code_outline'
-    if parser.result:
+    if parser.success:
         p[0] = p[1] + p[2]
 
 def p_function_header(p):
-    'function_header : func_type ID argument_list_head'
-    name = p[2]
+    'function_header : BLOCK_START func_type ID argument_list_head'
+    name = p[3]
     parser.currentfunc = name
     parser.argnum = 0
-    parser.namespace[name] = {}
-    args = p[3]
-    r_type = p[1]
+    args = p[4]
+    r_type = p[2]
     if (name == 'MAIN'):
         if (r_type != 'INT' or args != []):
             print(f'ERROR: Incorrect type for MAIN in line {p.lineno}')
@@ -65,10 +66,10 @@ def p_function_header(p):
                                   'arguments':args.split(','),'return':r_type}
             except AttributeError:
                 parser.namespace[name] = {'class':'funct',
-                                  'arguments':[],'return':'p[1]'}
+                                  'arguments':[],'return':'p[2]'}
     if parser.success:
         parser.varnum = 0
-        p[0] = p[2] + ':\n\tnop\n'
+        p[0] = p[3] + ':\n\tnop\n'
 
 def p_argument_list_head_1(p):
     'argument_list_head : LPAREN RPAREN '
@@ -90,11 +91,11 @@ def p_arg_head(p):
     if parser.success:
         parser.argnum -= 1
         parser.namespace[name] = {
-                'class'  : 'var'
-                'address': parser.argnum
-                'type'   : data
-                'dim'    : 0
-                'scope'  : parser.currentfunc
+                'class'   : 'var',
+                'address' : parser.argnum,
+                'type'    : data,
+                'dim'     : 0,
+                'scope'   : parser.currentfunc,
                 }
         p[0] = data + name
 def p_args_head_1(p):
@@ -108,9 +109,9 @@ def p_args_head_2(p):
 
 
 def p_function_code_outline(p):
-    'function_code_outline : BLOCK_START function_code BLOCK_END'
+    'function_code_outline : function_code BLOCK_END'
     if parser.success:
-        p[0] = p[2]
+        p[0] = p[1]
 
 def p_function_code_1(p):
     'function_code :  '
@@ -148,19 +149,22 @@ def p_declaration_1(p):
         # TODO add the new system for namespace
         ind = parser.varnum
         parser.varnum += 1
-        parser.namespace[name] = {
+        parser.namespace.update({name: {
                 'class'  : 'var',
                 'address': ind,
                 'type'   : data,
                 'dim'    : 0,
                 'scope'  : parser.currentfunc
-        }
+        }})
         p[0] = f'\tpushi 0\n'
 
 def p_declaration_2(p):
-    'declaration : INT ID ARRINDL val_arr_ind ARRINDR INSEND'
+    'declaration : data_type ID ARRINDL expression ARRINDR INSEND'
     name = p[2];
     data = p[1];
+    if data != 'INT':
+        print("Arrays should be integer type")
+        parser.success = False
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
             if parser.namespace[name]['scope'] == parser.currentfunc:
@@ -185,40 +189,37 @@ def p_declaration_2(p):
 
 def p_code_logic(p):
     'code_logic :  '
-    if parser.success:
-        p[0] = ''
+    p[0] = ''
 def p_code_logic_atr(p):
     'code_logic : atributions'
-    if parser.success:
-        p[0] = p[1]
+    p[0] = p[1]
 def p_code_logic_cond(p):
     'code_logic : conditionals'
-    if parser.success:
-        p[0] = p[1]
+    p[0] = p[1]
 def p_code_logic_func(p):
     'code_logic : function_calls'
-    if parser.success:
-        p[0] = p[1]
+    p[0] = p[1]
 
 
 def p_atributions(p):
     'atributions : atribution code_logic'
-    p[0] = p[1] + '\n' + p[2]
+    if parser.success:
+        p[0] = p[1] + p[2]
 
 def p_atribution_1(p): # EXPRESSION ATRIBUTION
     'atribution : ID ATRIB expression INSEND'
     name = p[1];
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
-            if parser.namespace[name]['scope'] == parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Name already in use!")
+            if parser.namespace[name]['scope'] != parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Not Declared!")
                 parser.success = False
         else:
-            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            print(f"ERROR(ln {p.lineno}): Not a variable!")
             parser.success = False
     if parser.success:
         address = parser.namespace[name]['address']
-        p[0] = f'{p[3]}\n\tstorel {address}\n'
+        p[0] = f'{p[3]}\tstorel {address}\n'
 
 
 
@@ -235,7 +236,7 @@ def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
             parser.success = False
     if parser.success:
         address = parser.namespace[name]['address']
-        p[0] = f'{p[3]}\n\tstorel {address}\n'
+        p[0] = f'{p[3]}\tstorel {address}\n'
 
 def p_atribution_3(p):
     'atribution : indarr ATRIB expression INSEND'
@@ -269,12 +270,12 @@ def p_term_1(p):
     'term : term mult_op factor'
     p[0] = p[1] + p[3] + p[2]
 def p_factor(p):
-    'factor : INTEGER'
-    p[0] = f'\npushi {p[1]}\n'
+    'factor : NUMBER'
+    p[0] = f'\tpushi {p[1]}\n'
 def p_factor_id(p):
     'factor : ID'
-    if (p[1] in namespace[curr_function]):
-        p[0] = 'pushl ' + str(index(p[1]))
+    if (p[1] in parser.namespace[parser.currentfunc]):
+        p[0] = '\tpushl ' + str(parser.namespace[p[1]]['address'])
     else:
         parser.success = False
         #TODO i was here 188
@@ -286,13 +287,16 @@ def p_factor_not(p):
     p[0] = p[2] + '\tnot\n'
 def p_factor_sym(p):
     'factor : SUB expression'
-    p[0] = f"{p[2]}\n\tpushi 2\n\tmul\n{p[2]}\n\tsub\n"
+    p[0] = f"{p[2]}\tpushi 2\n\tmul\n{p[2]}\n\tsub\n"
 def p_factor_func(p):
     'factor : call_function'
     p[0] = p[1]
 def p_factor_arr(p):
     'factor : indarr'
     p[0] = p[1]
+def p_factor_address(p):
+    'factor : ADDR expression'
+    p[0] = f'\tPUSHFP\n\t{p[2]}\tPADD\n'
 def p_ad_op_sum(p):
     'ad_op : SUM'
     p[0] = '\tadd\n'
@@ -330,47 +334,47 @@ def p_conditionals(p):
     p[0] = p[1] + p[2]
 
 def p_conditional_while(p):
-    'conditional : WHILE cond_expression cond_code'
+    'conditional : BLOCK_START WHILE cond_expression cond_code'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}{end_label}:\n'
+    p[0] = f'{loop_label}:\n{p[3]}\tjz {end_label}\n{p[4]}{end_label}:\n'
 
 def p_conditional_do_while(p):
-    'conditional : DO cond_code WHILE cond_expression'
+    'conditional : BLOCK_START DO cond_code WHILE cond_expression'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
+    p[0] = f'{loop_label}:\n{p[3]}\t{p[5]}\tjz {loop_label}\n'
 
 def p_conditional_until(p):
-    'conditional : UNTIL cond_expression cond_code'
+    'conditional : BLOCK_START UNTIL cond_expression cond_code'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}{end_label}:\n'
+    p[0] = f'{loop_label}:\n{p[3]}\tjz {end_label}\n{p[4]}{end_label}:\n'
 
 def p_conditional_do_until(p):
-    'conditional : DO cond_code UNTIL cond_expression'
+    'conditional : BLOCK_START DO cond_code UNTIL cond_expression'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
+    p[0] = f'{loop_label}:\n{p[3]}\t{p[5]}\tjz {loop_label}\n'
 
 def p_conditional_if(p):
-    'conditional : IF cond_expression cond_code'
+    'conditional : BLOCK_START IF cond_expression cond_code'
     cond_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{p[2]}\tjz {cond_label}\n{p[3]}{cond_label}:\n'
+    p[0] = f'{p[3]}\tjz {cond_label}\n{p[4]}{cond_label}:\n'
 
 def p_conditional_if_else(p):
-    'conditional : IF cond_expression cond_code ELSE cond_code'
+    'conditional : BLOCK_START IF cond_expression cond_code BLOCK_START ELSE cond_code'
     else_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{p[2]}\tjz {else_label}\n{p[3]}\tjump {end_label}\n'
-    p[0]+= f'{else_label}:\n{p[5]}\t{end_label}:\n'
+    p[0] = f'{p[3]}\tjz {else_label}\n{p[4]}\tjump {end_label}\n'
+    p[0]+= f'{else_label}:\n{p[7]}\t{end_label}:\n'
 def p_cond_expr(p):
     'cond_expression : LPAREN expression RPAREN'
     pass
@@ -402,7 +406,7 @@ def p_bool_op_or(p):
     'bool_op : CONDOR'
     p[0] = '\tadd\n'
 def p_cond_code(p):
-    'cond_code : BLOCK_START code_logic BLOCK_END'
+    'cond_code : code_logic BLOCK_END'
     p[0] = p[2]
 def p_function_calls(p):
     'function_calls : call_function code_logic'
@@ -441,59 +445,36 @@ def p_data_type_1(p):
     'data_type : INT'
     p[0] = p[1]
 def p_data_type_2(p):
-    'data_type : INT pointer'
-    p[0] = p[1] + p[2]
+    'data_type : pointer data_type'
+    p[0] = p[1] + ' ' + p[2]
 
 def p_pointer_1(p):
-    'pointer : MULT'
+    'pointer : REF'
     p[0] = p[1] # NOTE THESE TWO RETURN FOR TYPE
-def p_pointer_rec(p):
-    'pointer : MULT pointer'
-    p[0] = p[1] + p[2]
-
-def p_valid_array_ind_int(p):
-    'valid_array_ind : INTEGER'
-    p[0] = f'pushi {p[1]}'
-def p_valid_array_ind_var(p):
-    'valid_array_ind : ID'
-    name = p[1];
-    if (name in parser.namespace):
-        if parser.namespace[name]['class'] == 'var':
-            if parser.namespace[name]['scope'] == parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Name already in use!")
-                parser.success = False
-        else:
-            print(f"ERROR(ln {p.lineno}): Name already in use!")
-            parser.success = False
-    if parser.success:
-        ind = parser.namespace[name]['address']
-        p[0] = f'pushl {ind}'
 
 def p_code_end_v(p):
     'code_end : RETURN INSEND' # Needs to check if curr_func is void
-    if parser.namespace[currentfunc]['return'] == 'void':
+    if parser.namespace[parser.currentfunc]['return'] == 'void':
         p[0] = f'\treturn\n\tnop\n'
     else:
+        print("ERROR: Not a void function")
         parser.success = False
 
 def p_code_end_1(p):
     'code_end : RETURN expression INSEND' #NOTE no validations here
-    p[0] = f'{p[2]}\tstorel {index}\n\treturn\nnop\n'
+    p[0] = f'{p[2]}\tstorel {parser.argnum-1}\n\treturn\n\tnop\n'
 
 
 def p_error(p):
     parser.success = False
-    print('ERROR: Could not parse this file.\n')
-
+    print(f'ERROR: Could not parse this file.\nLine {p.lineno}\nToken {p}')
+    p.lexer.skip(1)
 
 
 
 ################### MAIN FUNCTION ##############################
 ################################################################
 def main():
-    parser = yacc.yacc()
-
-
     parser.namespace = {
        # '__FUNCTION_NAME_NO_ONE_WILL_EVER_USE__':{
        #     'class':'funct',
@@ -544,51 +525,40 @@ def main():
         'DO':{'class':'reserved'}
     }
     parser.labelcounter = 1 # main calling function has a label
-    parser.currentfunc  = 'MAIN'
+    parser.currentfunc  = ''
     parser.varnum       = 0
     parser.argnum       = 0
     parser.result       = ''
     parser.success      = True
     flag_err            = False
     argc                = len(sys.argv)
-    flag_run = False # Flag for Runnnig the Virtual Machine upon compilation
-    # NOTE Only works on linux as it requires vms installed and in an
-    # accepted location (or in PATH) but it still generates a vm code file
     flag_name = False
     if argc >= 2:
-        name = re.match(r'(.*)\.nqc', sys.argv[1])
+        name = re.search(r'([A-Za-z\_0-9]+)\.nqc', sys.argv[1])
         if name:
             name = name.group(1) + '.vm'
         else:
+            print("Error, not a nqc file")
             flag_err = True
     else:
-        flag_err = True
-
-    if not flag_err and argc == 3:
-        if sys.argv[3] == '-r':
-            flag_run = True
-    else:
+        print("Not enough arguments")
         flag_err = True
 
     if not flag_err and argc > 3:
-        if sys.argv[3] == '-o':
+        if sys.argv[2] == '-o':
             if argc >= 4:
                 new_name = re.match(r'(.*\.vm)',sys.argv[3])
                 new_name = new_name.group(1)
                 flag_name = True
             else:
+                print("Missing new name")
                 flag_err = True
-            if not flag_err:
-                if argc == 5:
-                    if sys.argv[-1] == '-r':
-                        flag_run = True
-                    else:
-                        flag_err = True
 
     if not flag_err:
         with open(sys.argv[1],'r') as f:
             cont = f.read()
-        res = parser.parse(cont)
+        parser.parse(cont)
+        res = str(parser.result)
         if parser.success:
             if (flag_name):
                 with open(new_name, 'w+') as nf:
@@ -597,15 +567,6 @@ def main():
                 with open(name, 'w+') as nf:
                     nf.write(res)
             print("Code Generated")
-            if (flag_run):
-                try:
-                    if flag_name:
-                        subprocess.run(["vms "+new_name], check=True)
-                    else:
-                        subprocess.run(["vms "+name], check=True)
-                except subprocess.CalledProcessError:
-                    print("""Please install the Virtual Machine, VM.
-                            Then move vms to PATH.""")
             print("Success")
         else:
             print("Fail")
@@ -614,6 +575,7 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = yacc.yacc(debug=1)
     main()
 
 
