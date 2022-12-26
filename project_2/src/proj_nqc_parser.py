@@ -16,13 +16,30 @@ from proj_nqc_lexer import tokens
 ###################### AXIOM ######################
 # The axiom 'program' generates the function that calls main
 def p_program(p):
-    'program : functions'
-    p[0] = p[1]
+    'program : pre_comps functions'
+    p[0] = p[1] + p[2]
     if parser.success:
         parser.result = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
         parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
         parser.result += '\tjz L0\n\tnop\n\tstop\nL0:\n\tpushs "Exited with code "'
         parser.result += '\n\twrites\n\twritei\n\t\pushs "\\n"\n\twrites\n\tstop\n'+p[0]
+
+def p_pre_comps(p):
+    'pre_comps :  '
+    p[0] = ''
+
+def p_pre_comps_1(p):
+    'pre_comps : pre_comp pre_comps'
+    p[0] = p[1] + p[2]
+def p_pre_comp_1(p):
+    'pre_comp : DEFINE ID expression INSEND'
+    name = p[2];rep = p[3]
+    if name not in parser.namespace:
+        parser.namespace[name] = {'class' : 'pre_comp', 'subs' : rep}
+        p[0] = ''
+    else:
+        print("ERROR: Name in use")
+        parser.sucess = False
 
 def p_functions_1(p):
     'functions :  '
@@ -225,7 +242,7 @@ def p_atribution_1(p): # EXPRESSION ATRIBUTION
 
 def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
     'atribution : ID ATRIB cond_expression INSEND'
-    name = p[1];
+    name = p[1]
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
             if parser.namespace[name]['scope'] == parser.currentfunc:
@@ -278,7 +295,7 @@ def p_factor_id(p):
         p[0] = '\tpushl ' + str(parser.namespace[p[1]]['address'])
     else:
         parser.success = False
-        #TODO i was here 188
+        # TODO i was here 188
 def p_factor_prio(p):
     'factor : LPAREN expression RPAREN'
     p[0] = p[2]
@@ -454,7 +471,7 @@ def p_pointer_1(p):
 
 def p_code_end_v(p):
     'code_end : RETURN INSEND' # Needs to check if curr_func is void
-    if parser.namespace[parser.currentfunc]['return'] == 'void':
+    if parser.namespace[parser.currentfunc]['return'] == 'VOID':
         p[0] = f'\treturn\n\tnop\n'
     else:
         print("ERROR: Not a void function")
@@ -522,7 +539,9 @@ def main():
         'WHILE':{'class':'reserved'},
         'RETURN':{'class':'reserved'},
         'UNTIL':{'class':'reserved'},
-        'DO':{'class':'reserved'}
+        'DO':{'class':'reserved'},
+
+        'NIL':{'class':'pre_comp','subs':99999}
     }
     parser.labelcounter = 1 # main calling function has a label
     parser.currentfunc  = ''

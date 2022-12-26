@@ -20,7 +20,7 @@ tokens = [
         'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
         'CONDAND','CONDOR','ATRIB','INSEND','ARRCONT',
         'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
-        'BLOCK_END','STRING','ADDR'
+        'BLOCK_END','STRING','ADDR','DEFINE'
 ] + list(reserved.values())
 
 ########### INTEGER ARITHMETIC ############
@@ -43,6 +43,7 @@ t_ARRCONT   = r'\x2C' # ,
 t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
 t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store
 t_ADDR      = r'\&'
+t_DEFINE    = r'\@DEFINE'
 # a[0] = 1;
 # a[1] = 2;
 # b = a[0];
@@ -60,7 +61,6 @@ def t_STRING(t):
 def t_COMMENT(t):
     r'\/\*(.|\n)*?\*\/'; pass
     # Ignores everything between /* */
-
 
 def t_NUMBER(t):
     r'\d+'
