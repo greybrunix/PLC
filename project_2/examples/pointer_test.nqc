@@ -1,0 +1,28 @@
+BEGIN INT MAIN( )
+	INT flag_err;
+	INT x;
+	INT y;
+	REF INT px;
+	REF INT py;
+
+	flag_err := 0;
+	x := 5;
+	y := 2;
+	px := &x;
+	py := &y;
+
+	SWAPFUNC( px , py );
+
+	writei(x);
+	writes("n");
+	writei(y);
+	writes("n");
+
+	MAIN := flag_err;
+END
+
+BEGIN VOID SWAPFUNC( REF INT px , REF INT py )
+	REF px := REF px + REF py;
+	REF py := REF py - REF px;
+	REF px := REF px - REF py;
+END

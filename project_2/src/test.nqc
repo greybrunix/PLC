@@ -1,0 +1,6 @@
+BEGIN INT MAIN ()
+    INT re;
+    re := 0;
+    RETURN 0;
+END
+

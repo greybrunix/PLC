@@ -1,0 +1,38 @@
+BEGIN INT MAIN( )
+	INT flag_err;
+	INT num;
+
+	flag_err := 0;
+	num := 5;
+
+	num := factorial( num );
+
+	writei( num );
+	writes( "" );
+
+	MAIN := flag_err;
+END
+
+BEGIN INT factorial( INT num )
+	BEGIN IF ( num <= 1 )
+		factorial := 1;
+	END
+	BEGIN ELSE
+		factorial := num *
+			factorial( (num - 1) );
+	END
+END
+
+/*
+BEGIN INT factorial( INT num )
+	int res;
+	BEGIN IF ( num <= 1 )
+		res := 1;
+	END
+	BEGIN ELSE
+		res := num *
+			factorial( (num -1) );
+	END
+	RETURN res;
+END
+*/

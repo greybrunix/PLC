@@ -1,0 +1,16 @@
+RECORD LLIST
+	INT val;
+	REF RECORD LLIST next;
+END
+
+BEGIN INT MAIN()
+	RECORD LLIST x;
+	INT TEST;
+	REF RECORD LLIST PTEST;
+	x := (1, NULL);
+	TEST := x:val;
+	PTEST := x:next;
+
+	MAIN := 0;
+END
+
