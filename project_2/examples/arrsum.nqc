@@ -1,0 +1,24 @@
+@DEFINE MAX 5
+
+INT sumArray( REF INT arr, INT count )
+BEGIN
+	INT i;
+	i:=0;
+	UNTIL ( i >= count ) BEGIN
+		sumArray:=sumArray+arr[i];
+		i:=i+1;
+	END
+END
+
+INT MAIN( )
+BEGIN
+	INT res;
+	INT arr[MAX];
+	arr[2]:=3;
+	arr[2]:=arr[2]+2;
+
+	res:=sumArray(arr,5);
+	WRITEI(res);
+
+	MAIN:=0;
+END

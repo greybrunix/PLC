@@ -3,7 +3,6 @@
 """
 import sys
 import re
-import subprocess
 from ply import yacc
 from proj_nqc_lexer import tokens
 
@@ -22,7 +21,7 @@ def p_program(p):
         parser.result = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
         parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
         parser.result += '\tjz L0\n\tnop\n\tstop\nL0:\n\tpushs "Exited with code "'
-        parser.result += '\n\twrites\n\twritei\n\t\pushs "\\n"\n\twrites\n\tstop\n'+p[0]
+        parser.result += '\n\twrites\n\twritei\n\tpushs "\\n"\n\twrites\n\tstop\n'+p[0]
 
 def p_pre_comps(p):
     'pre_comps :  '
@@ -60,12 +59,12 @@ def p_function(p):
         p[0] = p[1] + p[2]
 
 def p_function_header(p):
-    'function_header : BLOCK_START func_type ID argument_list_head'
-    name = p[3]
+    'function_header : func_type ID argument_list_head'
+    name = p[2]
     parser.currentfunc = name
     parser.argnum = 0
-    args = p[4]
-    r_type = p[2]
+    args = p[3]
+    r_type = p[1]
     if (name == 'MAIN'):
         if (r_type != 'INT' or args != []):
             print(f'ERROR: Incorrect type for MAIN in line {p.lineno}')
@@ -78,15 +77,22 @@ def p_function_header(p):
             print("ERROR: Name already used")
             parser.success = False
         if parser.success:
+            if r_type != 'VOID':
+                parser.namespace[name+'1'] = {'class' : 'var',
+                                'address' : parser.argnum-1,
+                                'type'    : r_type,
+                                'dim'    : 0,
+                                'scope'  : parser.currentfunc
+                }
             try:
                 parser.namespace[name] = {'class':'funct',
                                   'arguments':args.split(','),'return':r_type}
             except AttributeError:
                 parser.namespace[name] = {'class':'funct',
-                                  'arguments':[],'return':'p[2]'}
+                                  'arguments':[],'return':r_type}
     if parser.success:
         parser.varnum = 0
-        p[0] = p[3] + ':\n\tnop\n'
+        p[0] = name + ':\n\tnop\n'
 
 def p_argument_list_head_1(p):
     'argument_list_head : LPAREN RPAREN '
@@ -107,13 +113,13 @@ def p_arg_head(p):
             # TODO check this other args
     if parser.success:
         parser.argnum -= 1
-        parser.namespace[name] = {
+        parser.namespace.update({name : {
                 'class'   : 'var',
                 'address' : parser.argnum,
                 'type'    : data,
                 'dim'     : 0,
                 'scope'   : parser.currentfunc,
-                }
+                }})
         p[0] = data + name
 def p_args_head_1(p):
     'args_head :  '
@@ -126,9 +132,9 @@ def p_args_head_2(p):
 
 
 def p_function_code_outline(p):
-    'function_code_outline : function_code BLOCK_END'
+    'function_code_outline : BLOCK_START function_code BLOCK_END'
     if parser.success:
-        p[0] = p[1]
+        p[0] = p[2]
 
 def p_function_code_1(p):
     'function_code :  '
@@ -229,10 +235,10 @@ def p_atribution_1(p): # EXPRESSION ATRIBUTION
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
             if parser.namespace[name]['scope'] != parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Not Declared!")
+                print(f"ERROR: {p[1]} Not Declared!")
                 parser.success = False
         else:
-            print(f"ERROR(ln {p.lineno}): Not a variable!")
+            print(f"ERROR: {p[1]} Not a variable!")
             parser.success = False
     if parser.success:
         address = parser.namespace[name]['address']
@@ -245,11 +251,11 @@ def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
     name = p[1]
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
-            if parser.namespace[name]['scope'] == parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Name already in use!")
+            if parser.namespace[name]['scope'] != parser.currentfunc:
+                print(f"ERROR: {p[1]} Not Declared!")
                 parser.success = False
         else:
-            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            print(f"ERROR: {p[1]} Not a variable!")
             parser.success = False
     if parser.success:
         address = parser.namespace[name]['address']
@@ -291,10 +297,17 @@ def p_factor(p):
     p[0] = f'\tpushi {p[1]}\n'
 def p_factor_id(p):
     'factor : ID'
-    if (p[1] in parser.namespace[parser.currentfunc]):
-        p[0] = '\tpushl ' + str(parser.namespace[p[1]]['address'])
-    else:
-        parser.success = False
+    name = p[1];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] != parser.currentfunc:
+                print(f"ERROR(ln {p.lineno}): Not Declared!")
+                parser.success = False
+        else:
+            print(f"ERROR(ln {p.lineno}): Not a variable!")
+            parser.success = False
+    if parser.success:
+        p[0] = '\tpushl ' + str(parser.namespace[name]['address'])
         # TODO i was here 188
 def p_factor_prio(p):
     'factor : LPAREN expression RPAREN'
@@ -351,59 +364,59 @@ def p_conditionals(p):
     p[0] = p[1] + p[2]
 
 def p_conditional_while(p):
-    'conditional : BLOCK_START WHILE cond_expression cond_code'
+    'conditional : WHILE cond_expression cond_code'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[3]}\tjz {end_label}\n{p[4]}{end_label}:\n'
+    p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}{end_label}:\n'
 
 def p_conditional_do_while(p):
-    'conditional : BLOCK_START DO cond_code WHILE cond_expression'
+    'conditional : DO cond_code WHILE cond_expression'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[3]}\t{p[5]}\tjz {loop_label}\n'
+    p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
 
 def p_conditional_until(p):
-    'conditional : BLOCK_START UNTIL cond_expression cond_code'
+    'conditional : UNTIL cond_expression cond_code'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[3]}\tjz {end_label}\n{p[4]}{end_label}:\n'
+    p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}{end_label}:\n'
 
 def p_conditional_do_until(p):
-    'conditional : BLOCK_START DO cond_code UNTIL cond_expression'
+    'conditional : DO cond_code UNTIL cond_expression'
     loop_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{loop_label}:\n{p[3]}\t{p[5]}\tjz {loop_label}\n'
+    p[0] = f'{loop_label}:\n{p[2]}\t{p[4]}\tjz {loop_label}\n'
 
 def p_conditional_if(p):
-    'conditional : BLOCK_START IF cond_expression cond_code'
+    'conditional : IF cond_expression cond_code'
     cond_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{p[3]}\tjz {cond_label}\n{p[4]}{cond_label}:\n'
+    p[0] = f'{p[2]}\tjz {cond_label}\n{p[3]}{cond_label}:\n'
 
 def p_conditional_if_else(p):
-    'conditional : BLOCK_START IF cond_expression cond_code BLOCK_START ELSE cond_code'
+    'conditional : IF cond_expression cond_code ELSE cond_code'
     else_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
     end_label = 'L' + str(parser.labelcounter)
     parser.labelcounter += 1
-    p[0] = f'{p[3]}\tjz {else_label}\n{p[4]}\tjump {end_label}\n'
-    p[0]+= f'{else_label}:\n{p[7]}\t{end_label}:\n'
+    p[0] = f'{p[2]}\tjz {else_label}\n{p[3]}\tjump {end_label}\n'
+    p[0]+= f'{else_label}:\n{p[6]}\t{end_label}:\n'
 def p_cond_expr(p):
     'cond_expression : LPAREN expression RPAREN'
-    pass
+    p[0] = p[2]
 def p_cond_expr_1(p):
     'cond_expression : LPAREN cond_expression bool_op cond_expression RPAREN'
-    pass
+    p[0] = p[1] + p[3] + p[2]
 def p_bool_op_eq(p):
     'bool_op : EQ'
-    p[0] = f'\tdup 2\n\tinfeq\n\tsupeq\n\tmul\n'
+    p[0] = '\tdup 2\n\tinfeq\n\tsupeq\n\tmul\n'
 def p_bool_op_dif(p):
     'bool_op : DIF'
-    p[0] = f'\tdup 2\n\tinf\n\tsup\n\tadd\n'
+    p[0] = '\tdup 2\n\tinf\n\tsup\n\tadd\n'
 def p_bool_op_leq(p):
     'bool_op : LEQ'
     p[0] = '\tinfeq\n'
@@ -423,29 +436,45 @@ def p_bool_op_or(p):
     'bool_op : CONDOR'
     p[0] = '\tadd\n'
 def p_cond_code(p):
-    'cond_code : code_logic BLOCK_END'
+    'cond_code : BLOCK_START code_logic BLOCK_END'
     p[0] = p[2]
 def p_function_calls(p):
     'function_calls : call_function code_logic'
-    pass
+    p[0] = p[1] + p[2]
 def p_call_function(p):
     'call_function : ID args_lst'
-    pass
+    name = p[1]
+    args = p[2]
+    if name not in parser.namespace:
+        print("ERROR: Function not declared before use")
+        parser.success = False
+    else:
+        if parser.namespace[name]['class'] != 'function':
+            print("ERROR: not a function")
+            parser.success = False
+        else:
+            if len(parser.namespace[name]['args']) != len(args):
+                print("ERROR: incorrect length of arguments")
+                parser.success = False
+            # TYPE CHECKING or not be bothered to do it
+    if parser.success:
+        # create a function as a variable maybe for return
+        p[0] = f'pushi 0\n{args}\tpusha {name}\n\tcall\n\tpop {len(args)}\n'
 def p_args_lst(p):
     'args_lst : LPAREN RPAREN'
-    pass
+    p[0] = '\n'
 def p_args_lst_1(p):
     'args_lst : LPAREN arg args RPAREN'
-    pass
+    p[0] = p[2] + p[3]
 def p_arg(p):
     'arg : expression'
-    pass
+    p[0] = p[1]
 def p_args(p):
     'args :  '
-    pass
+    p[0] = ''
 def p_args_1(p):
     'args : ARRCONT arg args'
-    pass
+    p[0] = p[2] + p[3]
 
 def p_func_type_1(p):
     'func_type : VOID'
@@ -468,6 +497,7 @@ def p_data_type_2(p):
 def p_pointer_1(p):
     'pointer : REF'
     p[0] = p[1] # NOTE THESE TWO RETURN FOR TYPE
+
 
 def p_code_end_v(p):
     'code_end : RETURN INSEND' # Needs to check if curr_func is void

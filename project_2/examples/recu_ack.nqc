@@ -1,0 +1,33 @@
+INT ackermann( INT m, INT n )
+BEGIN
+	IF (m=0) BEGIN ackermann := n+1; END
+	ELSE BEGIN
+		IF (n=0) BEGIN ackermann := ackermann( m-1,1 ); END
+		ELSE BEGIN ackermann := ackermann( m-1 , ackermann( m,n-1 ) ); END
+	END
+END
+
+INT MAIN( )
+BEGIN
+	INT m; INT n;
+	m:=2;n:=3;
+	MAIN:=ackermann( m,n );
+END
+
+/*
+INT ackermann( INT m, INT n)
+BEGIN
+	INT res;
+	IF ( m=0 ) BEGIN res := n+1; END
+	ELSE BEGIN
+		IF ( n=0 ) BEGIN res := ackermann( m-1,1 ); END
+		ELSE BEGIN res := ackermann( m-1,ackermann( m,n-1 ) ); END
+	END
+	RETURN res;
+END
+INT MAIN( )
+BEGIN
+	INT m; INT n;
+	m:=2;n:=3;
+	RETURN ackermann( m,n );
+*/

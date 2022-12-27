@@ -33,7 +33,7 @@ t_SUB   = r'\-'
 #t_SHIFTLEFT = r'\<\<';t_SHIFTRIGHT = r'\>\>'
 ########### BOOLEAN #################
 t_GEQ = r'\>\=';t_LEQ = r'\<\='
-t_DIF = r'\!\=';t_EQ = r'\=\='
+t_DIF = r'\!\=';t_EQ = r'\='
 t_LESSER  = r'\<';t_GREATER = r'\>'
 t_CONDAND = r'\&\&';t_CONDOR = r'\|\|'
 t_NOT = r'\!'
@@ -67,9 +67,9 @@ def t_NUMBER(t):
     t.value = int(t.value); return t
 
 def t_BLOCK_START(t):
-    r'^BEGIN|(?<=\s)BEGIN';return t
+    r'((?<=\s)BEGIN|^BEGIN)(?=\s|\n)';return t
 def t_BLOCK_END(t):
-    r'(?<=[\s\n])END(?=\n)';return t
+    r'((?<=\s)END|^END)(?=\s|\Z|\n)';return t
 def t_ID(t):
     r'[A-Za-z][A-Za-z\_0-9]*';t.type = reserved.get(t.value, 'ID'); return t
 
