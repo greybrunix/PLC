@@ -9,6 +9,7 @@ reserved = {
         'IF'     : 'IF','ELSE'      : 'ELSE',
         'WHILE'  : 'WHILE','INT'    : 'INT',
         'STR'    : 'STR','REF'      : 'REF',
+        'DEREF'  : 'DEREF',
         'RETURN' : 'RETURN','UNTIL' : 'UNTIL',
         'DO'     : 'DO', 'VOID'     : 'VOID'
 }

@@ -1,0 +1,22 @@
+VOID swapfunc(REF INT px, REF INT py)
+BEGIN
+	REF px := REF px + REF py;
+	REF py := REF py - REF px;
+	REF px := REF px - REF py;
+END /* Standard alternative to XOR swapping */
+
+VOID bubble_sort(REF INT arr , INT n)
+BEGIN
+	INT i;INT j;
+	i:=0;j:=0;
+	WHILE (i<n-1)
+	BEGIN
+		WHILE (j<n-i-1)
+		BEGIN
+			IF (arr[j] > arr[j+1])
+			BEGIN swapfunc(&arr[j],&arr[j+1]); END
+			j:=j+1;
+		END
+		i:=i+1;
+	END
+END /* Basic Bubble Sort */

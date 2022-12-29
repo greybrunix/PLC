@@ -158,15 +158,15 @@ def p_declarations_2(p):
 # Each declaration
 def p_declaration_1(p):
     'declaration : data_type ID INSEND'
-    name = p[2];
-    data = p[1];
-    if (name in parser.namespace):
+    name = p[2]
+    data = p[1]
+    if name in parser.namespace:
         if parser.namespace[name]['class'] == 'var':
             if parser.namespace[name]['scope'] == parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Name already in use!")
+                print("ERROR: Name already in use!")
                 parser.success = False
         else:
-            print(f"ERROR(ln {p.lineno}): Name already in use!")
+            print("ERROR): Name already in use!")
             parser.success = False
     if parser.success:
         # TODO add the new system for namespace
@@ -176,17 +176,18 @@ def p_declaration_1(p):
                 'class'  : 'var',
                 'address': ind,
                 'type'   : data,
-                'dim'    : 0,
                 'scope'  : parser.currentfunc
         }})
-        p[0] = f'\tpushi 0\n'
+        if (data == 'REF INT'): p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n'
+        else: p[0] = '\tpushi 0\n'
 
 def p_declaration_2(p):
-    'declaration : data_type ID ARRINDL expression ARRINDR INSEND'
+    'declaration : data_type ID ARRINDL INTEGER ARRINDR INSEND'
     name = p[2];
     data = p[1];
-    if data != 'INT':
-        print("Arrays should be integer type")
+    const = p[4]
+    if data != 'REF INT':
+        print("Arrays should be REF INT")
         parser.success = False
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
@@ -199,15 +200,14 @@ def p_declaration_2(p):
     if parser.success:
         # TODO add the new system for namespace
         ind = parser.varnum
-        parser.varnum += 1
+        parser.varnum += 1 + const
         parser.namespace[name] = {
                 'class' : 'var',
                 'address': ind,
                 'type'   : data,
-                'dim'    : 1,
                 'scope'  : parser.currentfunc
         }
-        p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n\n'
+        p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n\tpushn {const}'
 
 
 def p_code_logic(p):
@@ -262,23 +262,34 @@ def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
         p[0] = f'{p[3]}\tstorel {address}\n'
 
 def p_atribution_3(p):
-    'atribution : indarr ATRIB expression INSEND'
-    # Understand arrays
-    #p[0] = p[2]
-
-def p_indarr_1(p):
-    'indarr : ID ARRINDL expression ARRINDR'      # Risks SEGFAULT But
-    if p[1] not in parser.namespace:              # it is User responsability
-        print(f"ERROR(ln {p.lineno}): Attribution without declaration.")
+    'atribution : ID ARRINDL expression ARRINDR ATRIB expression INSEND'
+    name = p[1]; ind = p[3]; atrib_expr = p[6]
+    if name not in parser.namespace:
+        print("ERROR: Atribution without declaration.")
         parser.success = False
-    if parser.success:
-        if (parser.namespace[p[1]]['class'] != 'var'
-          or parser.namespace[p[1]]['type'] != 'int'
-          or parser.namespace[p[1]]['dim'] != 1):
-            print(f"ERROR(ln {p.lineno}): Malformed indexing.")
+    if parser.sucess:
+        if (parser.namespace[name]['class'] != 'var'
+                or parser.namespace[name]['type'] != 'REF INT'):
+            print("ERROR: Malformed indexing.")
             parser.success = False
         else:
-            p[0] = f'\tpushl {p[1]}\n\t{p[3]}\n\tloadn\n'
+            index = parser.namespace[name]['address']
+            p[0] = f'\tpushl {index}\n\t{ind}\n{atrib_expr}\tstoren\n'
+
+def p_indarr_1(p):
+    'indarr : ID ARRINDL expression ARRINDR'         # Risks SEGFAULT But
+    name = p[1]; const = p[3]
+    if name not in parser.namespace:              # it is User responsability
+        print(f"ERROR: Indexing without declaration.")
+        parser.success = False
+    if parser.success:
+        if (parser.namespace[name]['class'] != 'var'
+            or parser.namespace[name]['type'] != 'REF INT'):
+            print(f"ERROR: Malformed indexing.")
+            parser.success = False
+        else:
+            index = parser.namespace[name]['address']
+            p[0] = f'\tpushl {index}\n\t{p[3]}\n\tloadn\n'
 def p_expression_1(p):
     'expression : term'
     p[0] = p[1]
@@ -301,10 +312,10 @@ def p_factor_id(p):
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
             if parser.namespace[name]['scope'] != parser.currentfunc:
-                print(f"ERROR(ln {p.lineno}): Not Declared!")
+                print("ERROR: Not Declared!")
                 parser.success = False
         else:
-            print(f"ERROR(ln {p.lineno}): Not a variable!")
+            print("ERROR: Not a variable!")
             parser.success = False
     if parser.success:
         p[0] = '\tpushl ' + str(parser.namespace[name]['address'])
@@ -534,8 +545,6 @@ def main():
        #     'class':'var', # self explanatory
        #     'address':'0', # the address is the offset to %EBP
        #     'type':'__TYPE_NO_ONE_WILL_EVER_USE__', # self explanatory
-       #     'dim': '0', # 0 int, 1 array, 2 bidimarray
-       #     'dimmax':'0,0', # might be removed
        #     'scope':'__FUNCTION_NAME_NO_ONE_WILL_EVER_USE__'
        #     }, # this serves only to exemplify declared variables
 

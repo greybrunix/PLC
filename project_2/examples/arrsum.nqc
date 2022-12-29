@@ -5,7 +5,7 @@ BEGIN
 	INT i;
 	i:=0;
 	UNTIL ( i >= count ) BEGIN
-		sumArray:=sumArray+arr[i];
+		sumArray:=sumArray+arr[i]; /**/
 		i:=i+1;
 	END
 END
