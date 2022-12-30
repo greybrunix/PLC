@@ -1,6 +1,12 @@
-BEGIN INT MAIN ()
+@DEFINE MAX 20;
+
+INT RE ()
+BEGIN INT re; re := 1; RETURN 0; END
+
+INT MAIN ()
+BEGIN
     INT re;
     re := 0;
     RETURN 0;
 END
-
+BEGIN

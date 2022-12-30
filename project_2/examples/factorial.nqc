@@ -1,4 +1,11 @@
-BEGIN INT MAIN( )
+INT factorial( INT num )
+BEGIN
+	IF ( num <= 1 ) BEGIN factorial := 1; END
+	ELSE BEGIN factorial := num * factorial( (num - 1) ); END
+END
+
+INT MAIN( )
+BEGIN
 	INT flag_err;
 	INT num;
 
@@ -13,26 +20,3 @@ BEGIN INT MAIN( )
 	MAIN := flag_err;
 END
 
-BEGIN INT factorial( INT num )
-	BEGIN IF ( num <= 1 )
-		factorial := 1;
-	END
-	BEGIN ELSE
-		factorial := num *
-			factorial( (num - 1) );
-	END
-END
-
-/*
-BEGIN INT factorial( INT num )
-	int res;
-	BEGIN IF ( num <= 1 )
-		res := 1;
-	END
-	BEGIN ELSE
-		res := num *
-			factorial( (num -1) );
-	END
-	RETURN res;
-END
-*/

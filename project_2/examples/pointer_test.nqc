@@ -1,4 +1,12 @@
-BEGIN INT MAIN( )
+VOID SWAPFUNC( REF INT px , REF INT py )
+BEGIN
+	REF px := REF px + REF py;
+	REF py := REF py - REF px;
+	REF px := REF px - REF py;
+END
+
+INT MAIN( )
+BEGIN
 	INT flag_err;
 	INT x;
 	INT y;
@@ -21,8 +29,3 @@ BEGIN INT MAIN( )
 	MAIN := flag_err;
 END
 
-BEGIN VOID SWAPFUNC( REF INT px , REF INT py )
-	REF px := REF px + REF py;
-	REF py := REF py - REF px;
-	REF px := REF px - REF py;
-END
