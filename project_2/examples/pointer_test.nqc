@@ -1,8 +1,8 @@
 VOID SWAPFUNC( REF INT px , REF INT py )
 BEGIN
-	REF px := REF px + REF py;
-	REF py := REF py - REF px;
-	REF px := REF px - REF py;
+	DEREF px := DEREF px + DEREF py;
+	DEREF py := DEREF py - DEDEREF px;
+	DEREF px := DEREF px - DEREF py;
 END
 
 INT MAIN( )

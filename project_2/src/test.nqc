@@ -1,12 +1,16 @@
 @DEFINE MAX 20;
 
-INT RE ()
-BEGIN INT re; re := 1; RETURN 0; END
-
 INT MAIN ()
 BEGIN
-    INT re;
-    re := 0;
-    RETURN 0;
+    INT dis;
+    REF INT re;
+    dis := MAX;
+    re := &dis;
+    IF (dis > MAX) BEGIN
+        DEREF re := 15;
+    END ELSE
+    BEGIN
+       dis := 10;
+    END
+    MAIN := dis;
 END
-BEGIN

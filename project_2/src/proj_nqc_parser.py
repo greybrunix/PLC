@@ -19,9 +19,14 @@ def p_program(p):
     p[0] = p[1] + p[2]
     if parser.success:
         parser.result = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
-        parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tnot\n'
-        parser.result += '\tjz L0\n\tnop\n\tstop\nL0:\n\tpushs "Exited with code "'
+        parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tdup 1\n\tnot\n'
+        parser.result += '\tjz L0\n\tnop\n\tpop 1\n\tstop\nL0:\n\tpushs "Exited with code "'
         parser.result += '\n\twrites\n\twritei\n\tpushs "\\n"\n\twrites\n\tstop\n'+p[0]
+        for elem in parser.namespace.keys():
+            if parser.namespace[elem]['class'] == 'pre_comp':
+                sub = parser.namespace[elem]['subs']
+                parser.result = re.sub(elem,sub,parser.result)
+                # g/DEFINE/s/DEFINE/sub in ed regex
 
 def p_pre_comps(p):
     'pre_comps :  '
@@ -31,10 +36,11 @@ def p_pre_comps_1(p):
     'pre_comps : pre_comp pre_comps'
     p[0] = p[1] + p[2]
 def p_pre_comp_1(p):
-    'pre_comp : DEFINE ID expression INSEND'
-    name = p[2];rep = p[3]
+    'pre_comp : DEFINE ID NUMBER INSEND'
+    name = p[2]
+    rep = p[3]
     if name not in parser.namespace:
-        parser.namespace[name] = {'class' : 'pre_comp', 'subs' : rep}
+        parser.namespace[name] = {'class' : 'pre_comp', 'subs' : str(rep)}
         p[0] = ''
     else:
         print("ERROR: Name in use")
@@ -72,6 +78,10 @@ def p_function_header(p):
         if parser.success:
             parser.namespace['MAIN'] = {'class':'funct',
                                     'arguments':[], 'return':'INT'}
+            parser.namespace['MAIN1'] = {'class':'var',
+                                         'address' : -1,
+                                         'type'    : 'INT',
+                                         'scope'   : 'MAIN'}
     else:
         if (name in parser.namespace):
             print("ERROR: Name already used")
@@ -81,7 +91,6 @@ def p_function_header(p):
                 parser.namespace[name+'1'] = {'class' : 'var',
                                 'address' : parser.argnum-1,
                                 'type'    : r_type,
-                                'dim'    : 0,
                                 'scope'  : parser.currentfunc
                 }
             try:
@@ -103,14 +112,13 @@ def p_argument_list_head_2(p):
     if parser.success:
         p[0] = p[2] + p[3]
 
-def p_arg_head(p):
+def p_arg_head(p): # Arrays must be passed by reference
     'arg_head : data_type ID'
     name = p[2]
     data = p[1]
     if name in parser.namespace:
         if parser.namespace['name']['class'] != 'var':
             parser.success = False
-            # TODO check this other args
     if parser.success:
         parser.argnum -= 1
         parser.namespace.update({name : {
@@ -141,9 +149,9 @@ def p_function_code_1(p):
     if parser.success:
         p[0] = ''
 def p_function_code_2(p):
-    'function_code : declarations code_logic code_end'
+    'function_code : declarations code_logic'
     if parser.success:
-        p[0] = p[1] + p[2] + p[3]
+        p[0] = p[1] + p[2] + f'\tpop {parser.varnum}\n\treturn\n\tnop\n'
 
 # Definition of what a declaration block can be
 def p_declarations_1(p):
@@ -178,11 +186,11 @@ def p_declaration_1(p):
                 'type'   : data,
                 'scope'  : parser.currentfunc
         }})
-        if (data == 'REF INT'): p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n'
+        if (data == 'REF INT'): p[0] = '\tpushfp\n\tpushi NIL\n\tpadd\n'
         else: p[0] = '\tpushi 0\n'
 
 def p_declaration_2(p):
-    'declaration : data_type ID ARRINDL INTEGER ARRINDR INSEND'
+    'declaration : data_type ID ARRINDL NUMBER ARRINDR INSEND'
     name = p[2];
     data = p[1];
     const = p[4]
@@ -238,19 +246,26 @@ def p_atribution_1(p): # EXPRESSION ATRIBUTION
                 print(f"ERROR: {p[1]} Not Declared!")
                 parser.success = False
         else:
-            print(f"ERROR: {p[1]} Not a variable!")
-            parser.success = False
+            if name != parser.currentfunc:
+                print(f"ERROR: {p[1]} Not a variable!")
+                parser.success = False
+            else:
+                if parser.namespace[name]['return'] == 'VOID':
+                    print("ERROR: Assigning value to void function")
+                    parser.success = False
     if parser.success:
-        address = parser.namespace[name]['address']
+        if name == parser.currentfunc:
+            address = parser.namespace[name+'1']['address']
+        else: address = parser.namespace[name]['address']
         p[0] = f'{p[3]}\tstorel {address}\n'
-
-
-
-def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
-    'atribution : ID ATRIB cond_expression INSEND'
-    name = p[1]
+def p_atribution_deref(p):
+    'atribution : DEREF ID ATRIB expression INSEND'
+    name = p[2]
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['type'] != 'REF INT':
+                print("ERROR: Dereferencing value")
+                parser.success = False
             if parser.namespace[name]['scope'] != parser.currentfunc:
                 print(f"ERROR: {p[1]} Not Declared!")
                 parser.success = False
@@ -259,7 +274,9 @@ def p_atribution_2(p): # CONDITIONAL EXPRESSION ATRIBUTION
             parser.success = False
     if parser.success:
         address = parser.namespace[name]['address']
-        p[0] = f'{p[3]}\tstorel {address}\n'
+        p[0] = f'\tpushl {address}\n{p[4]}\tstore 0\n'
+
+# Removed cond expression atrib
 
 def p_atribution_3(p):
     'atribution : ID ARRINDL expression ARRINDR ATRIB expression INSEND'
@@ -315,10 +332,22 @@ def p_factor_id(p):
                 print("ERROR: Not Declared!")
                 parser.success = False
         else:
-            print("ERROR: Not a variable!")
-            parser.success = False
+            if (parser.namespace[name]['class'] != 'pre_comp' and
+                name != parser.currentfunc):
+                print("ERROR: Not a variable!")
+                parser.success = False
+            if (name == parser.currentfunc and
+                parser.namespace[name]['return'] == 'VOID'):
+                print("ERROR: Getting value of void function!")
+                parser.success = False
     if parser.success:
-        p[0] = '\tpushl ' + str(parser.namespace[name]['address'])
+        if parser.namespace[name]['class'] == 'pre_comp':
+            p[0] = f'\tpushi {name}\n'
+        else:
+            if name == parser.currentfunc:
+                address = parser.namespace[name+'1']['address']
+            else: address = parser.namespace[name]['address']
+            p[0] = f'\tpushl {address}\n'
         # TODO i was here 188
 def p_factor_prio(p):
     'factor : LPAREN expression RPAREN'
@@ -336,8 +365,37 @@ def p_factor_arr(p):
     'factor : indarr'
     p[0] = p[1]
 def p_factor_address(p):
-    'factor : ADDR expression'
-    p[0] = f'\tPUSHFP\n\t{p[2]}\tPADD\n'
+    'factor : ADDR ID'
+    name = p[2];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['scope'] != parser.currentfunc:
+                print("ERROR: Not Declared!")
+                parser.success = False
+        else:
+            print("ERROR: Not a variable!")
+            parser.success = False
+    if parser.success:
+        address = parser.namespace[name]['address']
+        p[0] = f'\tpushfp\n\tpushi {address}\n\tpadd\n'
+def p_factor_dereference(p):
+    'factor : DEREF ID'
+    name = p[2];
+    if (name in parser.namespace):
+        if parser.namespace[name]['class'] == 'var':
+            if parser.namespace[name]['type'] != 'REF INT':
+                print("ERROR: Derefencing value!")
+                parser.success = False
+            if parser.namespace[name]['scope'] != parser.currentfunc:
+                print("ERROR: Not Declared!")
+                parser.success = False
+        else:
+            print("ERROR: Not a variable!")
+            parser.success = False
+    if parser.success:
+        address = parser.namespace[name]['address']
+        p[0] = f'\tpushl {address}\n\tload 0\n'
+
 def p_ad_op_sum(p):
     'ad_op : SUM'
     p[0] = '\tadd\n'
@@ -417,14 +475,14 @@ def p_conditional_if_else(p):
     p[0] = f'{p[2]}\tjz {else_label}\n{p[3]}\tjump {end_label}\n'
     p[0]+= f'{else_label}:\n{p[6]}\t{end_label}:\n'
 def p_cond_expr(p):
-    'cond_expression : LPAREN expression RPAREN'
+    'cond_expression : LPAREN term RPAREN'
     p[0] = p[2]
 def p_cond_expr_1(p):
-    'cond_expression : LPAREN cond_expression bool_op cond_expression RPAREN'
-    p[0] = p[1] + p[3] + p[2]
+    'cond_expression : LPAREN cond_expression bool_op term RPAREN'
+    p[0] = p[2] + p[4] + p[3]
 def p_bool_op_eq(p):
     'bool_op : EQ'
-    p[0] = '\tdup 2\n\tinfeq\n\tsupeq\n\tmul\n'
+    p[0] = '\tinfeq\n\tsupeq\n\tmul\n'
 def p_bool_op_dif(p):
     'bool_op : DIF'
     p[0] = '\tdup 2\n\tinf\n\tsup\n\tadd\n'
@@ -510,18 +568,6 @@ def p_pointer_1(p):
     p[0] = p[1] # NOTE THESE TWO RETURN FOR TYPE
 
 
-def p_code_end_v(p):
-    'code_end : RETURN INSEND' # Needs to check if curr_func is void
-    if parser.namespace[parser.currentfunc]['return'] == 'VOID':
-        p[0] = f'\treturn\n\tnop\n'
-    else:
-        print("ERROR: Not a void function")
-        parser.success = False
-
-def p_code_end_1(p):
-    'code_end : RETURN expression INSEND' #NOTE no validations here
-    p[0] = f'{p[2]}\tstorel {parser.argnum-1}\n\treturn\n\tnop\n'
-
 
 def p_error(p):
     parser.success = False
@@ -580,7 +626,7 @@ def main():
         'UNTIL':{'class':'reserved'},
         'DO':{'class':'reserved'},
 
-        'NIL':{'class':'pre_comp','subs':99999}
+        'NIL':{'class':'pre_comp','subs':'99999'}
     }
     parser.labelcounter = 1 # main calling function has a label
     parser.currentfunc  = ''
@@ -643,7 +689,7 @@ if __name__ == '__main__':
 # NOTE recognize function calls DONE
 # NOTE recognize arrays DONE
 #### NOTE Declarations of array types  NOTE indexing
-# TODO convert INTEGERS code to ASSEMBLY
+# TODO convert NUMBERS code to ASSEMBLY
 #### TODO translation grammar
 # NOTE replaced the grammar for arrays with a more `accurate?' recursive
 # form
@@ -698,11 +744,11 @@ if __name__ == '__main__':
 ###################################################################
 ####################### REQUIREMENTS ##############################
 ###################################################################
-# TODO 1) INTEGERS # NOTE PROJETO
+# TODO 1) NUMBERS # NOTE PROJETO
 #
 # NOTE everything past this is optional and for further work
 #### AKA nitpicks I'd like
-# TODO 2) POINTERS OVER INTEGERS # MIGHT ease array # It doesn't but makes
+# TODO 2) POINTERS OVER NUMBERS # MIGHT ease array # It doesn't but makes
 # the solution consistent with itself
 # TODO 3) CHARACTERS
 # TODO 4) POINTERS OVER CHARACTERS

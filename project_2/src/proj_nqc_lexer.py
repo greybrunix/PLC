@@ -9,8 +9,7 @@ reserved = {
         'IF'     : 'IF','ELSE'      : 'ELSE',
         'WHILE'  : 'WHILE','INT'    : 'INT',
         'STR'    : 'STR','REF'      : 'REF',
-        'DEREF'  : 'DEREF',
-        'RETURN' : 'RETURN','UNTIL' : 'UNTIL',
+        'DEREF'  : 'DEREF', 'UNTIL' : 'UNTIL',
         'DO'     : 'DO', 'VOID'     : 'VOID'
 }
 
@@ -72,7 +71,7 @@ def t_BLOCK_START(t):
 def t_BLOCK_END(t):
     r'((?<=\s)END|^END)(?=\s|\Z|\n)';return t
 def t_ID(t):
-    r'[A-Za-z][A-Za-z\_0-9]*';t.type = reserved.get(t.value, 'ID'); return t
+    r'[A-Za-z]+';t.type = reserved.get(t.value, 'ID'); return t
 
 def t_newline(t):
     r'\n+'
