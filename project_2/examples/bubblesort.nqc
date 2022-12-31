@@ -1,0 +1,35 @@
+VOID swapfunc(REF I64 px, REF I64 py)
+BEGIN
+	DEREF px := DEREF px + DEREF py;
+	DEREF py := DEREF py - DEREF px;
+	DEREF px := DEREF px - DEREF py;
+END /* Standard alternative to XOR swapping */
+
+VOID bubblesort(REF I64 arr , I64 n)
+BEGIN
+	I64 i;
+	I64 j;
+	i:=0;j:=0;
+	WHILE (i<(n-1))
+	BEGIN
+		WHILE (j<(n-i-1))
+		BEGIN
+			IF (arr[j] > arr[j+1])
+			BEGIN swapfunc(&arr[j],&arr[j+1]); END
+			j:=j+1;
+		END
+		i:=i+1;
+	END
+END /* Basic Bubble Sort */
+
+I64 MAIN()
+BEGIN
+	REF I64 arr[5];
+	arr[0] := 1;
+	arr[1] := -5;
+	arr[2] := 18;
+	arr[3] := 14;
+	arr[4] := 12;
+	bubblesort(arr, 5);
+	MAIN:=0;
+END

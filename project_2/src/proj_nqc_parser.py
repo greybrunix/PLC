@@ -36,7 +36,7 @@ def p_pre_comps_1(p):
     'pre_comps : pre_comp pre_comps'
     p[0] = p[1] + p[2]
 def p_pre_comp_1(p):
-    'pre_comp : DEFINE ID NUMBER INSEND'
+    'pre_comp : DEFINE ID NUMBER COMP'
     name = p[2]
     rep = p[3]
     if name not in parser.namespace:
@@ -72,15 +72,15 @@ def p_function_header(p):
     args = p[3]
     r_type = p[1]
     if (name == 'MAIN'):
-        if (r_type != 'INT' or args != []):
+        if (r_type != 'I64' or args != []):
             print(f'ERROR: Incorrect type for MAIN in line {p.lineno}')
             parser.success = False
         if parser.success:
             parser.namespace['MAIN'] = {'class':'funct',
-                                    'arguments':[], 'return':'INT'}
+                                    'arguments':[], 'return':'I64'}
             parser.namespace['MAIN1'] = {'class':'var',
                                          'address' : -1,
-                                         'type'    : 'INT',
+                                         'type'    : 'I64',
                                          'scope'   : 'MAIN'}
     else:
         if (name in parser.namespace):
@@ -165,7 +165,7 @@ def p_declarations_2(p):
 
 # Each declaration
 def p_declaration_1(p):
-    'declaration : data_type ID INSEND'
+    'declaration : data_type ID COMP'
     name = p[2]
     data = p[1]
     if name in parser.namespace:
@@ -186,16 +186,16 @@ def p_declaration_1(p):
                 'type'   : data,
                 'scope'  : parser.currentfunc
         }})
-        if (data == 'REF INT'): p[0] = '\tpushfp\n\tpushi NIL\n\tpadd\n'
+        if (data == 'REF I64'): p[0] = '\tpushfp\n\tpushi NIL\n\tpadd\n'
         else: p[0] = '\tpushi 0\n'
 
 def p_declaration_2(p):
-    'declaration : data_type ID ARRINDL NUMBER ARRINDR INSEND'
+    'declaration : data_type ID ARRINDL NUMBER ARRINDR COMP'
     name = p[2];
     data = p[1];
     const = p[4]
-    if data != 'REF INT':
-        print("Arrays should be REF INT")
+    if data != 'REF I64':
+        print("Arrays should be REF I64")
         parser.success = False
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
@@ -238,7 +238,7 @@ def p_atributions(p):
         p[0] = p[1] + p[2]
 
 def p_atribution_1(p): # EXPRESSION ATRIBUTION
-    'atribution : ID ATRIB expression INSEND'
+    'atribution : ID ATRIB expression COMP'
     name = p[1];
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
@@ -259,11 +259,11 @@ def p_atribution_1(p): # EXPRESSION ATRIBUTION
         else: address = parser.namespace[name]['address']
         p[0] = f'{p[3]}\tstorel {address}\n'
 def p_atribution_deref(p):
-    'atribution : DEREF ID ATRIB expression INSEND'
+    'atribution : DEREF ID ATRIB expression COMP'
     name = p[2]
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
-            if parser.namespace[name]['type'] != 'REF INT':
+            if parser.namespace[name]['type'] != 'REF I64':
                 print("ERROR: Dereferencing value")
                 parser.success = False
             if parser.namespace[name]['scope'] != parser.currentfunc:
@@ -279,14 +279,14 @@ def p_atribution_deref(p):
 # Removed cond expression atrib
 
 def p_atribution_3(p):
-    'atribution : ID ARRINDL expression ARRINDR ATRIB expression INSEND'
+    'atribution : ID ARRINDL expression ARRINDR ATRIB expression COMP'
     name = p[1]; ind = p[3]; atrib_expr = p[6]
     if name not in parser.namespace:
         print("ERROR: Atribution without declaration.")
         parser.success = False
     if parser.success:
         if (parser.namespace[name]['class'] != 'var'
-                or parser.namespace[name]['type'] != 'REF INT'):
+                or parser.namespace[name]['type'] != 'REF I64'):
             print("ERROR: Malformed indexing.")
             parser.success = False
         else:
@@ -301,7 +301,7 @@ def p_indarr_1(p):
         parser.success = False
     if parser.success:
         if (parser.namespace[name]['class'] != 'var'
-            or parser.namespace[name]['type'] != 'REF INT'):
+            or parser.namespace[name]['type'] != 'REF I64'):
             print(f"ERROR: Malformed indexing.")
             parser.success = False
         else:
@@ -383,7 +383,7 @@ def p_factor_dereference(p):
     name = p[2];
     if (name in parser.namespace):
         if parser.namespace[name]['class'] == 'var':
-            if parser.namespace[name]['type'] != 'REF INT':
+            if parser.namespace[name]['type'] != 'REF I64':
                 print("ERROR: Derefencing value!")
                 parser.success = False
             if parser.namespace[name]['scope'] != parser.currentfunc:
@@ -557,7 +557,7 @@ def p_data_type(p):
     'data_type : STR'
     p[0] = p[1]
 def p_data_type_1(p):
-    'data_type : INT'
+    'data_type : I64'
     p[0] = p[1]
 def p_data_type_2(p):
     'data_type : pointer data_type'
@@ -609,7 +609,7 @@ def main():
             },
         'WRITEI':{
             'class':'funct',
-            'arguments':['INT i'],
+            'arguments':['I64 i'],
             'return':'VOID'
             },
         'WRITES':{
@@ -617,7 +617,7 @@ def main():
             'arguments':['STR str'],
             'return':'VOID'
             },
-        'INT':{'class':'data'},
+        'I64':{'class':'data'},
         'STR':{'class':'data'},
         'IF':{'class':'reserved'},
         'ELSE':{'class':'reserved'},
@@ -748,10 +748,10 @@ if __name__ == '__main__':
 #
 # NOTE everything past this is optional and for further work
 #### AKA nitpicks I'd like
-# TODO 2) POINTERS OVER NUMBERS # MIGHT ease array # It doesn't but makes
+# TODO 2) POI64ERS OVER NUMBERS # MIGHT ease array # It doesn't but makes
 # the solution consistent with itself
 # TODO 3) CHARACTERS
-# TODO 4) POINTERS OVER CHARACTERS
+# TODO 4) POI64ERS OVER CHARACTERS
 # TODO 5) FLOATS
-# TODO 6) POINTERS OVER FLOATS
+# TODO 6) POI64ERS OVER FLOATS
 

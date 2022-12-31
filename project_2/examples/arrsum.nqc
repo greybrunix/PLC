@@ -1,8 +1,8 @@
 @DEFINE MAX 5
 
-INT sumArray( REF INT arr, INT count )
+I64 sumArray( REF I64 arr, I64 count )
 BEGIN
-	INT i;
+	I64 i;
 	i:=0;
 	UNTIL ( i >= count ) BEGIN
 		sumArray:=sumArray+arr[i]; /**/
@@ -10,10 +10,10 @@ BEGIN
 	END
 END
 
-INT MAIN( )
+I64 MAIN( )
 BEGIN
-	INT res;
-	INT arr[MAX];
+	I64 res;
+	I64 arr[MAX];
 	arr[2]:=3;
 	arr[2]:=arr[2]+2;
 
