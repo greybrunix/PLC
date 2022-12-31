@@ -4,13 +4,10 @@ INT MAIN ()
 BEGIN
     INT dis;
     REF INT re;
+    REF INT arr[5];
+    arr[0] := 1;
     dis := MAX;
     re := &dis;
-    IF (dis > MAX) BEGIN
-        DEREF re := 15;
-    END ELSE
-    BEGIN
-       dis := 10;
-    END
-    MAIN := dis;
+    DEREF re := 15 + arr[0];
+    MAIN := 0;
 END

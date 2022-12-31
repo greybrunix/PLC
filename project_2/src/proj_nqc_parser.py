@@ -44,7 +44,7 @@ def p_pre_comp_1(p):
         p[0] = ''
     else:
         print("ERROR: Name in use")
-        parser.sucess = False
+        parser.success = False
 
 def p_functions_1(p):
     'functions :  '
@@ -215,7 +215,7 @@ def p_declaration_2(p):
                 'type'   : data,
                 'scope'  : parser.currentfunc
         }
-        p[0] = f'\tpushfp\n\tpushi {ind}\n\tpadd\n\tpushn {const}'
+        p[0] = f'\tpushfp\n\tpushi {ind+1}\n\tpadd\n\tpushn {const}\n'
 
 
 def p_code_logic(p):
@@ -284,14 +284,14 @@ def p_atribution_3(p):
     if name not in parser.namespace:
         print("ERROR: Atribution without declaration.")
         parser.success = False
-    if parser.sucess:
+    if parser.success:
         if (parser.namespace[name]['class'] != 'var'
                 or parser.namespace[name]['type'] != 'REF INT'):
             print("ERROR: Malformed indexing.")
             parser.success = False
         else:
             index = parser.namespace[name]['address']
-            p[0] = f'\tpushl {index}\n\t{ind}\n{atrib_expr}\tstoren\n'
+            p[0] = f'\tpushl {index}\n{ind}{atrib_expr}\tstoren\n'
 
 def p_indarr_1(p):
     'indarr : ID ARRINDL expression ARRINDR'         # Risks SEGFAULT But
@@ -306,7 +306,7 @@ def p_indarr_1(p):
             parser.success = False
         else:
             index = parser.namespace[name]['address']
-            p[0] = f'\tpushl {index}\n\t{p[3]}\n\tloadn\n'
+            p[0] = f'\tpushl {index}\n{p[3]}\tloadn\n'
 def p_expression_1(p):
     'expression : term'
     p[0] = p[1]
