@@ -1,12 +1,13 @@
 @DEFINE MAX 20;
 
-INT RE ()
-BEGIN INT re; re := 1; RETURN 0; END
-
 INT MAIN ()
 BEGIN
-    INT re;
-    re := 0;
-    RETURN 0;
+    INT dis;
+    REF INT re;
+    REF INT arr[5];
+    arr[0] := 1;
+    dis := MAX;
+    re := &dis;
+    DEREF re := 15 + arr[0];
+    MAIN := 0;
 END
-BEGIN
