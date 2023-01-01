@@ -1,0 +1,13 @@
+<program> ::= <pre_comps> <function>
+<pre_comps> ::=   
+               | <pre_comp> <pre_comps>
+<pre_comp> ::= DEFINE ID NUMBER COMP
+<functions> ::=  
+               | <function> <function>
+<function> ::= <function_header> <function_code_outline>
+<function_header> ::= <func_type> ID <argument_list_head>
+<argument_list_head> ::= LPAREN RPAREN
+                        | LPAREN <arg_head> <args_head> RPAREN
+<arg_head> ::= <data_type> ID
+<args_head> ::=  
+               | ARRCONT <arg_head> <args_head>

@@ -1,13 +1,23 @@
 @DEFINE MAX 20;
 
-INT MAIN ()
+VOID TEST(REF INT arr)
 BEGIN
-    INT dis;
-    REF INT re;
-    REF INT arr[5];
-    arr[0] := 1;
-    dis := MAX;
-    re := &dis;
-    DEREF re := 15 + arr[0];
+    INT index;
+    index := 1;
+    arr[index] := 2;
+END
+
+I64 MAIN ()
+BEGIN
+    I64 index;
+    REF I64 arr[5];
+    arr[0] := 10;
+    arr[1] := 1;
+    arr[2] := 4;
+    arr[3] := 5;
+    arr[4] := 15;
+    index := 0;
+    arr[index] := MAX;
+    TEST(arr);
     MAIN := 0;
 END

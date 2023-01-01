@@ -1,17 +1,17 @@
-VOID SWAPFUNC( REF INT px , REF INT py )
+VOID SWAPFUNC( REF I64 px , REF I64 py )
 BEGIN
 	DEREF px := DEREF px + DEREF py;
 	DEREF py := DEREF py - DEDEREF px;
 	DEREF px := DEREF px - DEREF py;
 END
 
-INT MAIN( )
+I64 MAIN( )
 BEGIN
-	INT flag_err;
-	INT x;
-	INT y;
-	REF INT px;
-	REF INT py;
+	I64 flag_err;
+	I64 x;
+	I64 y;
+	REF I64 px;
+	REF I64 py;
 
 	flag_err := 0;
 	x := 5;

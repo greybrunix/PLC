@@ -1,13 +1,13 @@
-INT factorial( INT num )
+I64 factorial( I64 num )
 BEGIN
 	IF ( num <= 1 ) BEGIN factorial := 1; END
 	ELSE BEGIN factorial := num * factorial( (num - 1) ); END
 END
 
-INT MAIN( )
+I64 MAIN( )
 BEGIN
-	INT flag_err;
-	INT num;
+	I64 flag_err;
+	I64 num;
 
 	flag_err := 0;
 	num := 5;

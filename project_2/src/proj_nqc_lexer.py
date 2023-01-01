@@ -7,10 +7,11 @@ from ply import  lex
 
 reserved = {
         'IF'     : 'IF','ELSE'      : 'ELSE',
-        'WHILE'  : 'WHILE','INT'    : 'INT',
+        'WHILE'  : 'WHILE','I64'    : 'I64',
         'STR'    : 'STR','REF'      : 'REF',
         'DEREF'  : 'DEREF', 'UNTIL' : 'UNTIL',
-        'DO'     : 'DO', 'VOID'     : 'VOID'
+        'DO'     : 'DO', 'VOID'     : 'VOID',
+        'F64'    : 'F64'
 }
 
 # List of Tokens
