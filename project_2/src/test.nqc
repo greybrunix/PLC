@@ -1,23 +1,45 @@
 @DEFINE MAX 20;
 
-VOID TEST(REF INT arr)
+INT ackermann(INT m, INT n)
 BEGIN
-    INT index;
-    index := 1;
-    arr[index] := 2;
+   IF (m = 0)
+   BEGIN
+      ackermann := n+1;
+   END
+   ELSE
+   BEGIN
+      IF (n = 0)
+      BEGIN
+         ackermann := ackermann((m - 1),1);
+      END
+      ELSE
+      BEGIN
+         ackermann:= ackermann(m-1,ackermann(m,(n-1)));
+      END
+   END
 END
 
-I64 MAIN ()
+INT MAIN ()
 BEGIN
-    I64 index;
-    REF I64 arr[5];
-    arr[0] := 10;
-    arr[1] := 1;
-    arr[2] := 4;
-    arr[3] := 5;
-    arr[4] := 15;
-    index := 0;
-    arr[index] := MAX;
-    TEST(arr);
-    MAIN := 0;
+  INT index;
+  INT arr[5];
+  STR var;
+  INT mat[2,2];
+  arr[0] := 10;
+  arr[1] := 1;
+  arr[2] := 4;
+  arr[3] := 5;
+  arr[4] := 15;
+  mat[0,0] := 1;
+  mat[0,1] := 2;
+  mat[1,0] := 3;
+  mat[1,1] := 9;
+  index := 0;
+  IF (MAX = 20) BEGIN index:=ackermann(0,1); END
+  ELSE BEGIN index:= ackermann(1,0); END
+  var:= "\nHELLO\n";
+  WRITES(READ());
+  WRITES(var);
+  MAIN := 0;
 END
+

@@ -1,22 +1,25 @@
-I64 factorial( I64 num )
+INT factorial( INT num )
 BEGIN
-	IF ( num <= 1 ) BEGIN factorial := 1; END
-	ELSE BEGIN factorial := num * factorial( (num - 1) ); END
+  IF ( num <= 1 )
+  BEGIN
+    factorial := 1;
+  END
+  ELSE
+  BEGIN
+    factorial := num * factorial( (num - 1) );
+  END
 END
 
-I64 MAIN( )
+INT MAIN( )
 BEGIN
-	I64 flag_err;
-	I64 num;
+  INT flagerr;
+  INT num;
 
-	flag_err := 0;
-	num := 5;
+  flagerr := 0;
+  num := 5;
 
-	num := factorial( num );
+  num := factorial( num );
 
-	writei( num );
-	writes( "" );
-
-	MAIN := flag_err;
+  MAIN := flagerr;
 END
 

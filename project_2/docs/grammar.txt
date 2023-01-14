@@ -11,3 +11,59 @@
 <arg_head> ::= <data_type> ID
 <args_head> ::=  
                | ARRCONT <arg_head> <args_head>
+<function_code_outline> ::= BLOCK_START <function_code> BLOCK_END
+
+<function_code> ::= 
+                   | <declarations> <code_logic>
+<declarations> ::= 
+                  | <declaration> <declarations>
+<declaration> ::= <data_type> ID COMP
+                | <data_type> ID ARRINDL NUMBER ARRINDR COMP
+<code_logic> ::= 
+                | <atributions>
+                | <conditionals>
+                | <function_calls>
+<atributions> ::= <atribution> <code_logic>
+
+<atribution> ::= ID ATRIB <expression> COMP
+               | DEREF ID ATRIB <expression> COMP 
+               | ID ARRINDL <expression> ARRINDR ATRIB <expression> COMP
+<indarr> ::= ID ARRINDL <expression> ARRINDR
+<expression> ::= <term>
+                | <expression> <ad_op> <term>
+<term> ::= <factor>
+          | <term> <mult_op> <factor>
+<factor> ::= NUMBER
+            | ID
+            | LPAREN <expression> RPAREN
+            | NOT <expression>
+            | SUB <expression>
+            | <call_function>
+            | <indarr>
+            | ADDR ID
+            | DEREF ID
+<ad_op> ::= SUM
+          | SUB
+<mult_op> ::= MULT
+             | DIV
+             | MODULO
+<conditionals> ::= <conditional> <code_logic>
+<conditional> ::= WHILE <cond_expression> <cond_code>
+                | DO <cond_code> WHILE <cond_expression>
+                | UNTIL <cond_expression> <cond_code>
+                | DO <cond_code> UNTIL <cond_expression>
+                | IF <cond_expression> <cond_code>
+                | IF <cond_expression> <cond_code> ELSE <cond_code>
+
+MISSING STUFF
+
+<cond_code> ::= BLOCK_START code_logic BLOCK_END
+
+MISSING STUFF
+
+<func_type> ::= VOID
+              | <data_type>
+<data_type> ::= STR
+              | INT
+              | <pointer> <data_type>
+<pointer> ::= REF
