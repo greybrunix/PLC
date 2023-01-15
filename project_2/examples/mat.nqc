@@ -1,0 +1,16 @@
+INT
+MAIN()
+BEGIN
+    INT ARR[5,5];
+    INT I; INT J;
+    WHILE (I<=5)
+    BEGIN
+        WHILE (J<=5)
+        BEGIN
+            ARR[I,J]:=I-J;
+            J:=J+1;
+        END
+        I:=I+1;
+    END
+    MAIN:=0;
+END

@@ -1,17 +1,17 @@
-I64 ackermann( I64 m, I64 n )
+INT ackermann( INT m, INT n )
 BEGIN
-	IF (m=0) BEGIN ackermann := n+1; END
-	ELSE BEGIN
-		IF (n=0) BEGIN ackermann := ackermann( m-1,1 ); END
-		ELSE BEGIN ackermann := ackermann( m-1 , ackermann( m,n-1 ) ); END
-	END
+  IF (m=0) BEGIN ackermann := n+1; END
+  ELSE BEGIN
+    IF (n=0) BEGIN ackermann := ackermann( m-1,1 ); END
+    ELSE BEGIN ackermann := ackermann( m-1 , ackermann( m,n-1 ) ); END
+  END
 END
 
-I64 MAIN( )
+INT MAIN( )
 BEGIN
-	I64 m; I64 n; I64 res;
-	m:=2;n:=3;
-	res := ackermann( m,n);
-	MAIN:=0;
+  INT m; INT n; INT res;
+  m:=2;n:=3;
+  res := ackermann( m,n);
+  MAIN:=0;
 END
 

@@ -1,24 +1,24 @@
-@DEFINE MAX 5
 
-I64 sumArray( REF I64 arr, I64 count )
+INT sumArray( REF INT arr, INT count )
 BEGIN
-	I64 i;
-	i:=0;
-	UNTIL ( i >= count ) BEGIN
-		sumArray:=sumArray+arr[i]; /**/
-		i:=i+1;
-	END
+  INT i;
+  i:=0;
+  UNTIL (i = count)
+  BEGIN
+    sumArray:=sumArray+arr[i]; /**/
+    i:=i+1;
+  END
 END
 
-I64 MAIN( )
+INT MAIN( )
 BEGIN
-	I64 res;
-	I64 arr[MAX];
-	arr[2]:=3;
-	arr[2]:=arr[2]+2;
+  INT res;
+  INT arr[5];
+  arr[2]:=3;
+  arr[1]:=arr[2]+2;
+  arr[0]:=9;
 
-	res:=sumArray(arr,5);
-	WRITEI(res);
+  res:=sumArray(arr,5);
 
-	MAIN:=0;
+  MAIN:=0;
 END

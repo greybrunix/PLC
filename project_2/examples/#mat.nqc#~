@@ -1,0 +1,16 @@
+INT
+F(INT N)
+BEGIN
+
+
+END
+
+
+INT
+MAIN()
+BEGIN
+	INT ARR[5,5];
+	INT RES;
+	INT I; INT J;
+	
+END

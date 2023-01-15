@@ -1,7 +1,4 @@
-<program> ::= <pre_comps> <function>
-<pre_comps> ::=   
-               | <pre_comp> <pre_comps>
-<pre_comp> ::= DEFINE ID NUMBER COMP
+<program> ::= <functions>
 <functions> ::=  
                | <function> <function>
 <function> ::= <function_header> <function_code_outline>
@@ -11,3 +8,79 @@
 <arg_head> ::= <data_type> ID
 <args_head> ::=  
                | ARRCONT <arg_head> <args_head>
+<function_code_outline> ::= BLOCK_START <function_code> BLOCK_END
+
+<function_code> ::= 
+                   | <declarations> <code_logic>
+<declarations> ::= 
+                  | <declaration> <declarations>
+<declaration> ::= <data_type> ID COMP
+                | <data_type> ID ARRINDL NUMBER ARRINDR COMP
+                | <data_type> ID ARRINDL NUMBER ARRCONT NUMBER ARRINDR COMP
+<code_logic> ::= 
+                | <atributions>
+                | <conditionals>
+                | <function_calls>
+<atributions> ::= <atribution> <code_logic>
+
+<atribution> ::= ID ATRIB STRING COMP
+               | ID ATRIB <expression> COMP
+               | DEREF ID ATRIB <expression> COMP 
+               | ID ARRINDL <expression> ARRINDR ATRIB <expression> COMP
+               | ID ARRINDL <expression> ARRCONT <expression> ARRINDR ATRIB <expression> COMP
+<indarr> ::= ID ARRINDL <expression> ARRINDR
+<indmat> ::= ID ARRINDL <expression> ARRCONT <expression> ARRINDR
+<expression> ::= <term>
+                | <expression> <ad_op> <term>
+<term> ::= <factor>
+          | <term> <mult_op> <factor>
+<factor> ::= NUMBER
+            | ID
+            | LPAREN <cond_expression> RPAREN
+            | NOT <expression>
+            | SUB <expression>
+            | <call_function>
+            | <indarr>
+            | <indmat>
+            | ADDR ID
+            | ADDR ID ARRINDL expression ARRCONT expression ARRINDR
+            | DEREF ID
+<ad_op> ::= SUM
+          | SUB
+<mult_op> ::= MULT
+             | DIV
+             | MODULO
+<conditionals> ::= <conditional> <code_logic>
+<conditional> ::= WHILE <cond_expression> <cond_code>
+                | DO <cond_code> WHILE <cond_expression>
+                | UNTIL <cond_expression> <cond_code>
+                | DO <cond_code> UNTIL <cond_expression>
+                | IF <cond_expression> <cond_code>
+                | IF <cond_expression> <cond_code> ELSE <cond_code>
+<cond_expression> ::= <expression>
+                    | <cond_expression> <bool_op> <expression>
+<bool_op> ::= EQ | DIF | LEQ | GEQ | LESSER | GREATER
+            | CONDAND | CONDOR
+<cond_code> ::= BLOCK_START code_logic BLOCK_END
+
+<call_functions> ::= <call_function> COMP <code_logic>
+<call_function> ::= ID <args_lst>
+                  | READ LPAREN RPAREN
+                  | WRITES LPAREN STRING RPAREN | WRITES LPAREN ID RPAREN
+                  | WRITES LPAREN READ LPAREN RPAREN RPAREN
+                  | WRITEI LPAREN <expression> RPAREN
+                  | ATOI LPAREN STRING RPAREN
+                  | ATOI LPAREN ID RPAREN
+                  | ATOI LPAREN READ LPAREN RPAREN RPAREN
+<args_lst> ::= LPAREN RPAREN
+             | LPAREN <expression> <args> RPAREN
+<args>     ::=  
+             | ARRCONT <expression> <args>
+
+<func_type> ::= VOID
+              | <data_type>
+<data_type> ::= STR
+              | INT
+              | <pointer> <data_type>
+<pointer> ::= REF
+            | REF REF
