@@ -1,3 +1,4 @@
+#! /bin/python3
 """
     PROJECT
 """
@@ -7,40 +8,13 @@ from ply import yacc
 from lexer import tokens
 
 def p_program(p):
-    'program : pre_comps functions'
+    'program : functions'
     if parser.success:
-        p[0] = p[1] + p[2]
+        p[0] = p[1]
         parser.result = 'calling: nop\n\tstart\n\tnop\n\tpushi 0'
         parser.result += '\n\tpusha MAIN\n\tcall\n\tnop\n\tdup 1\n\tnot\n'
         parser.result += '\tjz L0\n\tnop\n\tpop 1\n\tstop\nL0:\n\tpushs "Exited with code "'
         parser.result += '\n\twrites\n\twritei\n\tpushs "\\n"\n\twrites\n\tstop\n'+p[0]
-        for elem in parser.namespace.keys():
-            if parser.namespace[elem]['class'] == 'pre_comp':
-                sub = parser.namespace[elem]['subs']
-                parser.result = re.sub(elem,sub,parser.result)
-
-def p_pre_comps(p):
-    'pre_comps :  '
-    if parser.success:
-        p[0] = ''
-
-def p_pre_comps_1(p):
-    'pre_comps : pre_comp pre_comps'
-    if parser.success:
-        p[0] = p[1] + p[2]
-def p_pre_comp_1(p):
-    'pre_comp : DEFINE ID NUMBER COMP'
-    if parser.success:
-        name = p[2]
-        rep = p[3]
-        if name not in parser.namespace:
-            parser.namespace[name] = {'class' : 'pre_comp', 'subs' : str(rep)}
-            p[0] = ''
-        else:
-            print("ERROR: Name in use",
-                    file=sys.stderr)
-            parser.success = False
-
 def p_functions_1(p):
     'functions :  '
     if parser.success:
@@ -77,8 +51,9 @@ def p_function_header(p):
                 parser.namespace['MAIN'] = {'class':'funct',
                                     'arguments':[], 'return':'INT'}
                 parser.namespace['MAIN1'] = {'class':'var',
-                                         'address' : -1,
+                                         'address' : '-1',
                                          'type'    : 'INT',
+                                         'size'    : '0',
                                          'scope'   : 'MAIN'}
         else:
             if name in parser.namespace:
@@ -98,7 +73,7 @@ def p_function_header(p):
                             'class'   : 'var',
                             'address' : str(parser.argnum),
                             'type'    : data,
-                            'dim'     : 0,
+                            'size'     : '0',
                             'scope'   : parser.currentfunc,
                         }})
                 except AttributeError:
@@ -108,6 +83,7 @@ def p_function_header(p):
                     parser.namespace[name+'1'] = {'class' : 'var',
                                 'address' : parser.argnum-1,
                                 'type'    : r_type,
+                                'size'   : '0',
                                 'scope'  : parser.currentfunc
                     }
         if parser.success:
@@ -194,10 +170,11 @@ def p_declaration_1(p):
                 'class'  : 'var',
                 'address': str(ind),
                 'type'   : data,
+                'size'   : '0',
                 'scope'  : parser.currentfunc
         }})
         if data == 'REF INT':
-            p[0] = '\tpushgp\n\tpushi NIL\n\tpadd\n'
+            p[0] = '\tpushgp\n\tpushi 99999\n\tpadd\n'
         else: p[0] = '\tpushi 0\n'
 
 def p_declaration_2(p):
@@ -468,17 +445,21 @@ def p_expression_1(p):
         p[0] = p[1]
 def p_expression_2(p):
     'expression : expression ad_op term'
-    p[0] = p[1] + p[3] + p[2]
+    if parser.success:
+        p[0] = p[1] + p[3] + p[2]
 
 def p_term(p):
     'term : factor'
-    p[0] = p[1]
+    if parser.success:
+        p[0] = p[1]
 def p_term_1(p):
     'term : term mult_op factor'
-    p[0] = p[1] + p[3] + p[2]
+    if parser.success:
+        p[0] = p[1] + p[3] + p[2]
 def p_factor(p):
     'factor : NUMBER'
-    p[0] = f'\tpushi {p[1]}\n'
+    if parser.success:
+        p[0] = f'\tpushi {p[1]}\n'
 def p_factor_id(p):
     'factor : ID'
     if parser.success:
@@ -490,27 +471,29 @@ def p_factor_id(p):
                            file=sys.stderr)
                     parser.success = False
             else:
-                if (parser.namespace[name]['class'] != 'pre_comp' and
-                    name != parser.currentfunc):
-                    print("ERROR: Not a variable!",
-                           file=sys.stderr)
-                    parser.success = False
                 if (name == parser.currentfunc and
                     parser.namespace[name]['return'] == 'VOID'):
                     print("ERROR: Accessing value of void function!",
                             file=sys.stderr)
                     parser.success = False
-    if parser.success:
-        if parser.namespace[name]['class'] == 'pre_comp':
-            p[0] = f'\tpushi {name}\n'
         else:
-            if name == parser.currentfunc:
-                address = parser.namespace[name+'1']['address']
-            else:
-                address = parser.namespace[name]['address']
+            if name != 'NIL' :
+                print("ERROR: Not Declared!", file=sys.stderr)
+                parser.success = False
+    if parser.success:
+        flag = False
+        if name == 'NIL':
+            flag = True
+        if name == parser.currentfunc:
+            address = parser.namespace[name+'1']['address']
+        else:
+            address = parser.namespace[name]['address']
+        if flag:
+            p[0] = '\tpushi 99999\n'
+        else:
             p[0] = f'\tpushl {address}\n'
 def p_factor_prio(p):
-    'factor : LPAREN expression RPAREN'
+    'factor : LPAREN cond_expression RPAREN'
     if parser.success:
         p[0] = p[2]
 def p_factor_not(p):
@@ -520,7 +503,7 @@ def p_factor_not(p):
 def p_factor_sym(p):
     'factor : SUB expression'
     if parser.success:
-        p[0] = f"{p[2]}\tpushi 2\n\tmul\n{p[2]}\n\tsub\n"
+        p[0] = f"\tpushi 0\n{p[2]}\tsub\n"
 def p_factor_func(p):
     'factor : call_function'
     if parser.success:
@@ -569,7 +552,7 @@ def p_factor_addrarr(p):
             index = parser.namespace[name]['address']
             p[0] = f'\tpushl {index}\n{const}\tpadd\n'
 def p_facto_addrmat(p):
-    'indmat : ADDR ID ARRINDL expression ARRCONT expression ARRINDR'
+    'factor : ADDR ID ARRINDL expression ARRCONT expression ARRINDR'
     if parser.success:
         name = p[2]
         if name not in parser.namespace:
@@ -640,7 +623,7 @@ def p_conditional_while(p):
         parser.labelcounter += 1
         end_label = 'L' + str(parser.labelcounter)
         parser.labelcounter += 1
-        p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}\tjump{loop_label}\n{end_label}:\n'
+        p[0] = f'{loop_label}:\n{p[2]}\tjz {end_label}\n{p[3]}\tjump {loop_label}\n{end_label}:\n'
 
 def p_conditional_do_while(p):
     'conditional : DO cond_code WHILE cond_expression'
@@ -656,7 +639,7 @@ def p_conditional_until(p):
         parser.labelcounter += 1
         end_label = 'L' + str(parser.labelcounter)
         parser.labelcounter += 1
-        p[0] = f'{loop_label}:\n{p[2]}\tnot\n\tjz {end_label}\n{p[3]}\tjump{loop_label}\n{end_label}:\n'
+        p[0] = f'{loop_label}:\n{p[2]}\tnot\n\tjz {end_label}\n{p[3]}\tjump {loop_label}\n{end_label}:\n'
 
 def p_conditional_do_until(p):
     'conditional : DO cond_code UNTIL cond_expression'
@@ -686,27 +669,17 @@ def p_cond_expr(p):
     if parser.success:
         p[0] = p[1]
 def p_cond_expr_1(p):
-    'cond_expression : LPAREN cond_expression bool_op term RPAREN'
+    'cond_expression : cond_expression bool_op expression'
     if parser.success:
-        boolop = p[3]
-        if boolop[1] == 'p':
-            p[0] = '\tpushi 0\n' + p[2] + p[4] + p[3]
-        else:
-            p[0] = p[2] + p[4] + p[3]
+        p[0] = p[1] + p[3] + p[2]
 def p_bool_op_eq(p):
     'bool_op : EQ'
     if parser.success:
-        res = '\tpushsp\n\tpushi -2\n\tpadd\n\tpushsp\n\tpushi -2\n\tpadd\n'
-        res +='\tload 0\n\tpushsp\n\tpushi -2\n\tpadd\n\tload 0\n\tinfeq\n'
-        res +='\tstore 0\n\tsupeq\n\tmul\n'
-        p[0] = res
+        p[0] = '\tequal\n'
 def p_bool_op_dif(p):
     'bool_op : DIF'
     if parser.success:
-        res = '\tpushsp\n\tpushi -2\n\tpadd\n\tpushsp\n\tpushi -2\n\tpadd\n'
-        res +='\tload 0\n\tpushsp\n\tpushi -2\n\tpadd\n\tload 0\n\tinf\n'
-        res +='\tstore 0\n\tsup\n\tadd\n'
-        p[0] = res
+        p[0] = '\tequal\n\tnot\n'
 def p_bool_op_leq(p):
     'bool_op : LEQ'
     if parser.success:
@@ -726,11 +699,11 @@ def p_bool_op_gre(p):
 def p_bool_op_and(p):
     'bool_op : CONDAND'
     if parser.success:
-        p[0] = '\tmul\n'
+        p[0] = '\tand\n'
 def p_bool_op_or(p):
     'bool_op : CONDOR'
     if parser.success:
-        p[0] = '\tadd\n'
+        p[0] = '\tor\n'
 def p_cond_code(p):
     'cond_code : BLOCK_START code_logic BLOCK_END'
     if parser.success:
@@ -926,9 +899,7 @@ def main():
         'WHILE':{'class':'reserved'},
         'RETURN':{'class':'reserved'},
         'UNTIL':{'class':'reserved'},
-        'DO':{'class':'reserved'},
-
-        'NIL':{'class':'pre_comp','subs':'99999'}
+        'DO':{'class':'reserved'}
     }
     parser.labelcounter = 1
     parser.currentfunc  = ''
@@ -973,10 +944,10 @@ def main():
             else:
                 print(res)
             print("Code Generated",file=sys.stderr)
+        else:
+            print("Error generating code",file=sys.stderr)
     return flag_err
 
-
-if __name__ == '__main__':
-    parser = yacc.yacc(debug=0)
-    sys.exit(main())
+parser = yacc.yacc(debug=0)
+sys.exit(main())
 

@@ -1,40 +1,40 @@
-VOID swapfunc(REF INT px, REF INT py)
+VOID SWAPFUNC(REF INT N, REF INT M)
 BEGIN
-  DEREF px := DEREF px * DEREF py;
-  DEREF py := DEREF px / DEREF py;
-  DEREF px := DEREF px / DEREF py;
+  DEREF N := DEREF N * DEREF M;
+  DEREF M := DEREF N / DEREF M;
+  DEREF N := DEREF N / DEREF M;
 END
-VOID bubblesort(REF INT arr , INT n)
+VOID BUBBLESORT(REF INT ARR , INT N)
 BEGIN
-  INT i;
-  INT j;
-  i:=0;j:=0;
-  WHILE (i < (n-1))
+  INT I;
+  INT J;
+  I:=0;J:=0;
+  WHILE (I < (N-1))
   BEGIN
-    WHILE (j < ((n-i)-1))
+    WHILE (J < ((N-I)-1))
     BEGIN
-      IF (arr[j] > arr[j+1])
+      IF (ARR[J] > ARR[J+1])
       BEGIN
-         swapfunc(&arr[j], &arr[j+1]);
+         SWAPFUNC(&ARR[J], &ARR[J+1]);
       END
-      j:=j+1;
+      J:=J+1;
     END
-    i:=i+1;
+    I:=I+1;
   END
-END /* Basic Bubble Sort */
+END /* BASIC BUBBLE SORT */
 
 INT MAIN()
 BEGIN
-  INT i;
-  INT arr[5];
-  arr[0] := 1;
-  arr[1] := 0-5;
-  arr[2] := 18;
-  arr[3] := 14;
-  arr[4] := 12;
-  i:=1;
-  bubblesort(arr, 5);
-  WRITEI(i);
+  INT N;
+  INT ARR[5];
+  ARR[0] := 1;
+  ARR[1] := 0-5;
+  ARR[2] := 18;
+  ARR[3] := 14;
+  ARR[4] := 12;
+  N:=1;
+  BUBBLESORT(ARR, 5);
+  WRITEI(N);
   WRITES("HELLO");
   MAIN:=0;
 END

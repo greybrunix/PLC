@@ -1,45 +1,71 @@
-@DEFINE MAX 20;
-
-INT ackermann(INT m, INT n)
+VOID
+SWAPF(REF INT PX, REF INT PY)
 BEGIN
-   IF (m = 0)
-   BEGIN
-      ackermann := n+1;
-   END
+   DEREF PX := DEREF PX * DEREF PY;
+   DEREF PY := DEREF PX / DEREF PY;
+   DEREF PX := DEREF PX / DEREF PY;
+END
+
+INT
+A(INT M, INT N)
+BEGIN
+   IF (M = 0)
+   BEGIN A := N+1; END
    ELSE
    BEGIN
-      IF (n = 0)
+      IF (N = 0)
       BEGIN
-         ackermann := ackermann((m - 1),1);
+         A := A((M-1),1);
       END
       ELSE
       BEGIN
-         ackermann:= ackermann(m-1,ackermann(m,(n-1)));
+         A := A((M-1), A(M,N-1));
       END
    END
 END
 
-INT MAIN ()
+VOID
+BS(REF INT AR, INT N) /* BUBBLE SORT */
 BEGIN
-  INT index;
-  INT arr[5];
-  STR var;
-  INT mat[2,2];
-  arr[0] := 10;
-  arr[1] := 1;
-  arr[2] := 4;
-  arr[3] := 5;
-  arr[4] := 15;
-  mat[0,0] := 1;
-  mat[0,1] := 2;
-  mat[1,0] := 3;
-  mat[1,1] := 9;
-  index := 0;
-  IF (MAX = 20) BEGIN index:=ackermann(0,1); END
-  ELSE BEGIN index:= ackermann(1,0); END
-  var:= "\nHELLO\n";
-  WRITES(READ());
-  WRITES(var);
-  MAIN := 0;
+   INT I;
+   INT FLAG;
+   FLAG:=1;
+   UNTIL (!FLAG)
+   BEGIN
+      FLAG:=0;
+      WHILE (I < (N-1))
+      BEGIN
+         IF (AR[I] > AR[I+1]) BEGIN SWAPF(&AR[I],&AR[I+1]); FLAG:=1; END
+         I:=I+1;
+      END
+   END
 END
 
+INT
+F(INT N) /* FACTORIAL FUNCTION */
+BEGIN
+   INT I;
+   F := 1;
+   WHILE ((N-I) > 0)
+   BEGIN
+      I:=I+1;
+      F:=F*I;
+   END
+END
+
+INT
+MAIN()
+BEGIN
+   INT RES;
+   INT ARR[2];
+   ARR[0]:=10;
+   ARR[1]:=-25;
+   BS(ARR,2);
+   WRITEI(ARR[0]); WRITES("\n");
+   WRITEI(ARR[1]); WRITES("\n");
+   RES:=A(1,1);
+   WRITEI(RES); WRITES("\n");
+   RES:=F(2);
+   WRITEI(RES); WRITES("\n");
+   MAIN:=0;
+END

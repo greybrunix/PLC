@@ -22,7 +22,7 @@ tokens = [
         'NOT','GEQ','LEQ','DIF','EQ','LESSER','GREATER',
         'CONDAND','CONDOR','ATRIB','COMP','ARRCONT',
         'LPAREN','RPAREN','ARRINDL','ARRINDR','BLOCK_START',
-        'BLOCK_END','STRING','ADDR','DEFINE'
+        'BLOCK_END','STRING','ADDR'
 ] + list(reserved.values())
 
 ########### INTEGER ARITHMETIC ############
@@ -45,12 +45,6 @@ t_ARRCONT   = r'\x2C' # ,
 t_ARRINDL   = r'\x5B' # [ Indexing arrays translates to load or store
 t_ARRINDR   = r'\x5D' # ] Indexing arrays translates to load or store
 t_ADDR      = r'\&'
-t_DEFINE    = r'\@DEFINE'
-# a[0] = 1;
-# a[1] = 2;
-# b = a[0];
-# writei(b) -> 1
-# a[20] is alloc 20
 
 
 t_LPAREN    = r'\x28' # (
@@ -69,11 +63,11 @@ def t_NUMBER(t):
     t.value = int(t.value); return t
 
 def t_BLOCK_START(t):
-    r'((?<=\s)BEGIN|^BEGIN)(?=\s|\n)';return t
+    r'BEGIN';return t
 def t_BLOCK_END(t):
-    r'((?<=\s)END|^END)(?=\s|\n)';return t
+    r'END';return t
 def t_ID(t):
-    r'[A-Za-z][A-Za-z]*';t.type = reserved.get(t.value, 'ID'); return t
+    r'[A-Za-z]+';t.type = reserved.get(t.value, 'ID'); return t
 
 def t_newline(t):
     r'\n+'
