@@ -242,8 +242,14 @@ def p_declaration_bin_arr(p):
                 'size' : str(total_size),
                 'scope' : parser.currentfunc
                 }
+        arr = list(range(0,int(row)))
         for i in range(0,int(row)):
-            res += f'\tpushfp\n\tpushi {ind+i}\n\tpadd\n\tpushi {col}\n\tpushi {i}\n\tadd\n\tpadd\n'
+            if i == 0:
+                arr[i] = ind+int(col)
+            else:
+                arr[i] = int(col)+arr[i-1]
+        for i in arr:
+            res += f'\tpushfp\n\tpushi {i}\n\tpadd\n'
         p[0] = res + f'\tpushn {total_size}\n'
 
 
