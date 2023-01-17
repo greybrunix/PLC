@@ -234,12 +234,14 @@ def p_declaration_bin_arr(p):
                     parser.success = False
     if parser.success:
         ind = parser.varnum
-        parser.varnum += row+total_size
+        parser.varnum += 1+row+total_size
         parser.namespace[name] = {
                 'class' : 'var',
                 'address' : str(ind),
                 'type' : 'REF REF ' + data,
                 'size' : str(total_size),
+                'cols'  : str(col),
+                'rows' : str(row),
                 'scope' : parser.currentfunc
                 }
         arr = list(range(0,int(row)))
@@ -407,8 +409,10 @@ def p_atribution_4(p):
                 print("ERROR: Malformed indexing.", file=sys.stderr)
                 parser.success = False
             else:
-                index = parser.namespace[name]['address']
-                p[0] = f'\tpushl {index}\n{col}\tpadd\n{row}{atrib_expr}\tstoren\n'
+                rows = int(parser.namespace[name]['rows'])
+                cols = int(parser.namespace[name]['cols'])
+                index = int(parser.namespace[name]['address'])
+                p[0] = f'\tpushl {index}\n{row}\tpushi {cols}\n\tmul\n\tpadd\n{col}{atrib_expr}\tstoren\n'
 def p_indarr_1(p):
     'indarr : ID ARRINDL expression ARRINDR'
     if parser.success:
@@ -441,8 +445,10 @@ def p_indmat_2(p):
             print("ERROR: Malformed indexing.")
             parser.success = False
         else:
+            rows = parser.namespace[name]['rows']
+            cols = parser.namespace[name]['cols']
             index = parser.namespace[name]['address']
-            p[0] = f'\tpushl {index}\n{p[3]}\tpadd\n\t{p[4]}\tloadn\n'
+            p[0] = f'\tpushl {index}\n{p[3]}\t\npushi {cols}\n\tmull\n\tpadd\n\t{p[5]}\tloadn\n'
 
 
 def p_expression_1(p):

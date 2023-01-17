@@ -1,11 +1,12 @@
 INT
 MAIN()
 BEGIN
-    INT ARR[5,5];
+    INT ARR[3,3];
     INT I; INT J;
-    WHILE (I<=5)
+    WHILE (I<3)
     BEGIN
-        WHILE (J<=5)
+        J:=0;
+        WHILE (J<3)
         BEGIN
             ARR[I,J]:=I-J;
             J:=J+1;

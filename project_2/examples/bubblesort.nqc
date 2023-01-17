@@ -11,6 +11,7 @@ BEGIN
   I:=0;J:=0;
   WHILE (I < (N-1))
   BEGIN
+    J:=0;
     WHILE (J < ((N-I)-1))
     BEGIN
       IF (ARR[J] > ARR[J+1])
